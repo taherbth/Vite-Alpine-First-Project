@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('_x_app-theme');           
+            // Check if user specifically set dark OR if they have no setting but system is dark
+            if (savedTheme === '"dark"' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('bg-gray-900 text-white');
+            } else {
+                document.documentElement.classList.remove('bg-gray-900 text-white');
+            }
+        })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + Tailwind + Alpine</title>
+  </head>
+  <body x-data :class="$store.app.theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'">    
+    <h1 x-data='appData' x-text="features[0].title"> </h1>
+    <nav class="p-4 border-b flex justify-between items-center">
+        <img :src="$store.app.assets.logo" class="h-8" alt="Logo">
+        
+        <div>
+            Welcome, <span x-text="$store.app.user.name" class="font-bold"></span>
+        </div>
+        <button 
+            @click="$store.app.toggleTheme()"
+            class="px-4 py-2 rounded-full border border-current hover:opacity-70 transition"
+        >
+            Switch to <span x-text="$store.app.theme === 'light' ? 'Dark' : 'Light'"></span> 
+        </button>
+
+        <button 
+            @click="$store.app.resetSettings()"
+            class="px-4 py-2 rounded-full border border-current hover:opacity-70 transition ml-4 btn-yellow-color"
+        >
+            Reset Theme
+        </button>
+    </nav>
+    <header class="p-10 text-center">
+        <h1 class="text-3xl font-bold">Global State in Action</h1>
+        <p class="mt-4">The theme is currently: <strong x-text="$store.app.theme"></strong></p>
+        
+        <div class="mt-6">
+            <img :src="$store.app.assets.banner" class="rounded-xl shadow-lg mx-auto" alt="Banner">
+        </div>
+    </header>
+    <nav x-data="navigation">
+      <button @click="toggle()" class="custom-utility">Menu</button>
+      <ul x-show="open">
+          <template x-for="(link, index) in links" :key="index">
+            <a :href="link.url"><li x-text="link.label"></li></a>
+          </template>
+      </ul>
+    </nav>
+    <!-- The Tailwind Spinner Component -->
+    <div x-show="$store.app.isLoading" 
+     x-transition.opacity
+     class="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">    
+        <div class="flex flex-col items-center">
+            <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            
+            <span class="mt-2 text-sm font-medium text-gray-600">Fetching Data...</span>
+        </div>
+    </div>
+    <template x-if="$store.app.isLoading">
+        <div class="space-y-4">
+            <template x-for="i in 5">
+                <div class="animate-pulse flex space-x-4 p-4 border rounded-lg">
+                    <div class="rounded-full bg-gray-200 h-10 w-10"></div>
+                    <div class="flex-1 space-y-3 py-1">
+                        <div class="h-2 bg-gray-200 rounded"></div>
+                        <div class="h-2 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+    <!-- The Toast UI Component -->
+    <div class="fixed top-5 right-5 z-[100] flex flex-col gap-2">
+        <template x-for="toast in $store.app.toasts" :key="toast.id">
+            <div x-show="true" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="translate-y-10 opacity-0"
+                 x-transition:enter-end="translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-end="opacity-0 scale-90"
+                 class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3">
+                
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                
+                <span x-text="toast.message" class="text-sm font-medium"></span>
+            </div>
+        </template>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
