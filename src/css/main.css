@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import "./styles/buttons.css";
-@import "./styles/animations.css";
+@import "buttons.css";
+@import "animations.css";
 
 .custom-utility {
   @apply bg-indigo-500 text-white p-4;

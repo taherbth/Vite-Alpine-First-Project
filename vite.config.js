@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import viteImagemin from 'vite-plugin-imagemin'
 
 export default defineConfig({
+  base: '/',
   // This is where you add plugins, 
   // like the image optimizer we discussed.
   plugins: [

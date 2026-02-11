@@ -16,7 +16,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + Tailwind + Alpine</title>
   </head>
-  <body x-data :class="$store.app.theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'">    
+  <body x-data :class="$store.app.theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'"> 
+  <div id="app-content">
+        <template x-route="/test">
+            <div>Home Content</div>
+        </template>
+        </div>   
     <h1 x-data='appData' x-text="features[0].title"> </h1>
     <nav class="p-4 border-b flex justify-between items-center">
         <img :src="$store.app.assets.logo" class="h-8" alt="Logo">
@@ -46,13 +51,20 @@
             <img :src="$store.app.assets.banner" class="rounded-xl shadow-lg mx-auto" alt="Banner">
         </div>
     </header>
-    <nav x-data="navigation">
-      <button @click="toggle()" class="custom-utility">Menu</button>
-      <ul x-show="open">
-          <template x-for="(link, index) in links" :key="index">
-            <a :href="link.url"><li x-text="link.label"></li></a>
-          </template>
-      </ul>
+    <nav x-data="navigation" class="relative">
+        <button @click="toggle()" class="custom-utility transition hover:bg-gray-200 p-2 rounded">
+            Menu
+        </button>
+        
+        <ul x-show="open" @click.away="open = false" class="absolute bg-white shadow-lg border rounded mt-2 p-2">
+            <template x-for="(link, index) in links" :key="index">
+                <li>                    
+                    <a :href="link.url" 
+                        @click.prevent="window.PineconeRouter.navigate(link.url); open = false" x-text="link.label">
+                    </a>
+                </li>
+            </template>
+        </ul>
     </nav>
     <!-- The Tailwind Spinner Component -->
     <div x-show="$store.app.isLoading" 
@@ -135,6 +147,40 @@
                     </div>
         </template>
     </div>
+    <div id="app-content" class="p-6">
+        <template x-route="/">
+            <div>
+                <h1 class="text-2xl font-bold">Welcome Home</h1>
+                <p>This is the landing page.</p>
+            </div>
+        </template>
+        <template x-route="/posts">
+            <div x-init="$store.app.fetchPosts()">
+                <h1 class="text-2xl font-bold">Blog</h1>
+            </div>
+        </template>
+        <template x-route="/about">
+            <div><h1>About Us</h1></div>
+        </template>
+        <template x-route="/contact">
+            <div><h1>Contact Us</h1></div>
+        </template>
+        <template x-route="notfound">
+            <div><h1>404 - Not Found</h1></div>
+        </template>
+    </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            // 1. Configure settings
+            window.PineconeRouter.settings.hash = false;
+            window.PineconeRouter.settings.basePath = '/';
+
+            // 2. Add a listener to see what the router is doing (Debug)
+            window.addEventListener('route-not-found', (e) => {
+                console.warn('Route not found:', e.detail.path);
+            });
+        });
+    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

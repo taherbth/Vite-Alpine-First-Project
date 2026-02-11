@@ -1,5 +1,5 @@
 // src/store.js
-export default () => ({
+export default (Alpine) => ({
     // We use Alpine.$persist() to wrap the initial value.
     // Alpine will now automatically sync 'theme' with localStorage['_x_theme'] 
     theme: Alpine.$persist('light').as('app-theme'),
@@ -19,8 +19,14 @@ export default () => ({
     // },
     // This runs automatically when Alpine.store('app', ...) is called
     async init() {
-        await this.fetchPosts();
-    },  
+        // await this.fetchPosts();
+        // Listen for route changes
+        window.addEventListener('route-changed', () => {
+            this.toasts = []; // Clear errors when switching pages
+            console.log('Navigated to:', window.location.pathname);
+        });
+    }, 
+
     addToast(message, type = 'error', action = null) {
         const id = Date.now();
         // We create the object here. Ensure 'action' is not undefined.
