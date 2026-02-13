@@ -3,9 +3,26 @@ export default (Alpine) => ({
     // We use Alpine.$persist() to wrap the initial value.
     // Alpine will now automatically sync 'theme' with localStorage['_x_theme'] 
     theme: Alpine.$persist('light').as('app-theme'),
+    isLoggedIn: Alpine.$persist(false), // Persist so they stay logged in on refresh
+    // theme: "light",
     posts: [],
     isLoading: false,
+
+    user: { name: 'Guest' },
+    
+    login() {
+        this.isLoggedIn = true;
+        this.user.name = 'John Doe';
+        this.addToast("Signed in!", "success");
+    },
+    
+    logout() {
+        this.isLoggedIn = false;
+        this.user.name = 'Guest';
+        window.PineconeRouter.navigate('/'); // Redirect to home
+    }, 
     toasts: [], // Array to hold active notifications
+
     apiUrl: import.meta.env.VITE_API_URL,
 
     // addToast(message, type = 'error') {

@@ -24,3 +24,4 @@ export default defineConfig({
     open: true, // Automatically opens the browser when you run npm run dev
   }
 })
+
