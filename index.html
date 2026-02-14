@@ -140,38 +140,81 @@
                     </div>
         </template>
     </div> 
-    <div id="app-content" x-router>
-        <template x-route="/" x-template>
-            <div>
-                <h1 class="text-2xl font-bold">Welcome Home</h1>
-                <p>This is the landing page.</p>
-            </div>
-        </template>
-         
-        <template x-route="/posts" x-template>
-            <div x-init="$store.app.fetchPosts()" class="animate-fade-in">
-                <h1 class="text-2xl font-bold mb-4">Blog</h1>                
-                <div class="grid gap-4">
-                    <template x-for="post in $store.app.posts" :key="post.id">
-                        <div class="p-4 border rounded shadow-sm hover:shadow-md transition">
-                            <h2 x-text="post.title" class="font-bold capitalize"></h2>
-                            <p x-text="post.body" class="text-sm text-gray-600 mt-2"></p>
+    <div id="app-content" class="p-6" x-data x-router>
+        <div :key="$router.path" x-show="true" x-transition:enter="transition ease-out duration-700" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <template x-route="/" x-template>
+                <div>
+                    <h1 class="text-2xl font-bold">Welcome Home</h1>
+                    <p>This is the landing page.</p>
+                </div>
+            </template>
+            <template x-route="/posts" x-template x-handler="authGuard">
+                <!-- <div x-init="$store.app.fetchPosts()" class="animate-fade-in"> -->
+                <div x-data="postsView" class="max-w-4xl mx-auto animate-fade-in">
+                    <h1 class="text-3xl font-bold mb-8">Latest Updates</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <template x-for="(post, index) in $store.app.posts" :key="post.id">
+                        <div 
+                            x-show="true"
+                            x-transition:enter="transition ease-out duration-500"
+                            x-transition:enter-start="opacity-0 translate-y-8"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            :style="`transition-delay: ${index * 100}ms`"
+                            class="p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            <span class="text-xs font-semibold uppercase tracking-wider text-blue-600" x-text="'Post #' + post.id"></span>
+                            <h2 class="text-xl font-bold mt-2 mb-3 capitalize text-gray-800" x-text="post.title"></h2>
+                            <p class="text-gray-600 leading-relaxed" x-text="post.body"></p>
+                            
+                            <div class="mt-4 flex items-center text-sm font-medium text-blue-500 cursor-pointer hover:underline">
+                                Read more 
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
                         </div>
                     </template>
                 </div>
-            </div>
-        </template>
-
-        <template x-route="/about" x-template>
-            <div><h1>About Us</h1></div>
-        </template>
-        <template x-route="/contact" x-template>
-            <div><h1>Contact Us</h1></div>
-        </template>
-
-        <template x-route="notfound" x-template>
-            <div><h1>404 - Not Found</h1></div>
-        </template>
+                <div class="text-center py-20">
+                    <div class="text-64 text-gray-300 mb-4">📭</div>
+                    <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
+                    <p class="text-gray-500">Check back later for new updates.</p>
+                </div>
+            </template>
+           <!--  <template x-if="!$store.app.isLoading && $store.app.posts.length === 0">
+                <div class="text-center py-20">
+                    <div class="text-64 text-gray-300 mb-4">📭</div>
+                    <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
+                    <p class="text-gray-500">Check back later for new updates.</p>
+                </div>
+            </template> -->
+            <template x-route="/about" x-template>
+                <div><h1>About Us</h1></div>
+            </template>
+            <template x-route="/contact" x-template>
+                <div x-data="contactForm">
+                    <h1 class="text-2xl font-bold mb-4">Contact Us</h1>
+                    <form @submit.prevent="submitForm()" class="space-y-4 max-w-md">
+                        <div>
+                            <label class="block text-sm font-medium">Email</label>
+                            <input type="email" x-model="formData.email" 
+                                   :class="errors.email ? 'border-red-500' : 'border-gray-300'"
+                                   class="w-full p-2 border rounded text-gray-900">
+                            <p x-show="errors.email" x-text="errors.email" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Message</label>
+                            <textarea x-model="formData.message" class="w-full p-2 border rounded text-gray-900" rows="4"></textarea>
+                            <p x-show="errors.message" x-text="errors.message" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </template>
+            <template x-route="notfound" x-template>
+                <div><h1>404 - Not Found</h1></div>
+            </template>
+        </div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>

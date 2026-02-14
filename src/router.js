@@ -1,13 +1,13 @@
 // 1. Define the Guard
 export const authGuard = (context) => {
     // Access the global store
+    Alpine.store('app').login();
     const isAuth = Alpine.store('app').isLoggedIn;
     
     if (!isAuth) {
-        Alpine.store('app').addToast("Access Denied: Please login first.", "error");
-        
+        Alpine.store('app').addToast("Access Denied: Please login first.", "error");        
         // Redirect back to home
-        context.redirect('/');
+        window.PineconeRouter.navigate('/')
         return false; // Stop the navigation
     }
 };

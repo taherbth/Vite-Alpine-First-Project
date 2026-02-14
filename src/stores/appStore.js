@@ -8,8 +8,7 @@ export default (Alpine) => ({
     posts: [],
     isLoading: false,
 
-    user: { name: 'Guest' },
-    
+
     login() {
         this.isLoggedIn = true;
         this.user.name = 'John Doe';
@@ -20,9 +19,10 @@ export default (Alpine) => ({
         this.isLoggedIn = false;
         this.user.name = 'Guest';
         window.PineconeRouter.navigate('/'); // Redirect to home
-    }, 
+    },
+    
     toasts: [], // Array to hold active notifications
-
+    
     apiUrl: import.meta.env.VITE_API_URL,
 
     // addToast(message, type = 'error') {
@@ -89,6 +89,7 @@ export default (Alpine) => ({
     async fetchPosts() {
         this.isLoading = true;
         try {
+            if (this.posts.length > 0) return; // Don't refetch if we already have them
             // const response = await fetch(`https://this-is-fake-123.com/posts`);
             const response = await fetch(`${this.apiUrl}/posts?_limit=5`);
             if (!response.ok) throw new Error();
