@@ -149,43 +149,42 @@
                 </div>
             </template>
             <template x-route="/posts" x-template x-handler="authGuard">
-                <!-- <div x-init="$store.app.fetchPosts()" class="animate-fade-in"> -->
-                <div x-data="postsView" class="max-w-4xl mx-auto animate-fade-in">
+                <div x-data="postsView" >
                     <h1 class="text-3xl font-bold mb-8">Latest Updates</h1>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <template x-for="(post, index) in $store.app.posts" :key="post.id">
-                        <div 
-                            x-show="true"
-                            x-transition:enter="transition ease-out duration-500"
-                            x-transition:enter-start="opacity-0 translate-y-8"
-                            x-transition:enter-end="opacity-100 translate-y-0"
-                            :style="`transition-delay: ${index * 100}ms`"
-                            class="p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                        >
-                            <span class="text-xs font-semibold uppercase tracking-wider text-blue-600" x-text="'Post #' + post.id"></span>
-                            <h2 class="text-xl font-bold mt-2 mb-3 capitalize text-gray-800" x-text="post.title"></h2>
-                            <p class="text-gray-600 leading-relaxed" x-text="post.body"></p>
-                            
-                            <div class="mt-4 flex items-center text-sm font-medium text-blue-500 cursor-pointer hover:underline">
-                                Read more 
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <template x-for="post in $store.app.posts" :key="post.id">
+                            <div class="p-4 border rounded h-64 bg-white text-gray-800">
+                                <h2 x-text="post.title" class="font-bold"></h2>
+                                <p x-text="post.body" class="text-sm mt-2"></p>
                             </div>
-                        </div>
-                    </template>
+                        </template>
+                    </div>
+                    <div id="infinite-scroll-trigger" style="background: rgba(255,0,0,0.2); border: 2px dashed red; min-height: 50px;" class="py-10 flex justify-center border-t border-gray-100">
+                        <template x-if="$store.app.isLoading">
+                            <div class="flex items-center gap-2">
+                                <svg class="animate-spin h-5 w-5 text-blue-600" ...></svg>
+                                <span>Loading...</span>
+                            </div>
+                        </template>                        
+                        <template x-if="!canLoadMore && !$store.app.isLoading">
+                            <span class="text-gray-400">You've reached the end!</span>
+                        </template>
+                    </div>
+                    
+                    <!-- <div class="text-center py-20">
+                        <div class="text-64 text-gray-300 mb-4">📭</div>
+                        <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
+                        <p class="text-gray-500">Check back later for new updates.</p>
+                    </div> -->
                 </div>
+            </template>            
+           <template x-if="!$store.app.isLoading && $store.app.posts.length === 0">
                 <div class="text-center py-20">
                     <div class="text-64 text-gray-300 mb-4">📭</div>
                     <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
                     <p class="text-gray-500">Check back later for new updates.</p>
                 </div>
-            </template>
-           <!--  <template x-if="!$store.app.isLoading && $store.app.posts.length === 0">
-                <div class="text-center py-20">
-                    <div class="text-64 text-gray-300 mb-4">📭</div>
-                    <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
-                    <p class="text-gray-500">Check back later for new updates.</p>
-                </div>
-            </template> -->
+            </template> 
             <template x-route="/about" x-template>
                 <div><h1>About Us</h1></div>
             </template>

@@ -8,6 +8,23 @@ export default (Alpine) => ({
     posts: [],
     isLoading: false,
 
+     // This runs automatically when Alpine.store('app', ...) is called
+    async init() {
+        Alpine.effect(async () => {
+            const currentTheme = this.theme;
+            if (this.isLoggedIn) {
+                console.log("Syncing theme to database...", currentTheme);
+                // Example API call:
+                // await fetch('/api/user/settings', { method: 'POST', body: JSON.stringify({ theme: currentTheme }) });
+            }
+        });
+        // await this.fetchPosts();
+        // Listen for route changes
+        window.addEventListener('route-changed', () => {
+            this.toasts = []; // Clear errors when switching pages
+            console.log('Navigated to:', window.location.pathname);
+        });
+    }, 
 
     login() {
         this.isLoggedIn = true;
@@ -33,16 +50,7 @@ export default (Alpine) => ({
     //     setTimeout(() => {
     //         this.toasts = this.toasts.filter(t => t.id !== id);
     //     }, 4000);
-    // },
-    // This runs automatically when Alpine.store('app', ...) is called
-    async init() {
-        // await this.fetchPosts();
-        // Listen for route changes
-        window.addEventListener('route-changed', () => {
-            this.toasts = []; // Clear errors when switching pages
-            console.log('Navigated to:', window.location.pathname);
-        });
-    }, 
+    // },   
 
     addToast(message, type = 'error', action = null) {
         const id = Date.now();
