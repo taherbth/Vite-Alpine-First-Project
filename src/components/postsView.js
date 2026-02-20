@@ -1,5 +1,8 @@
 // src/components/postsView.js
 export default () => ({
+    showTopButton: false,
+    // 1. Create a placeholder for the function
+    _scrollHandler: null,
     limit: 6,
     offset: 0,
     canLoadMore: true,
@@ -19,8 +22,29 @@ export default () => ({
             const target = document.querySelector('#infinite-scroll-trigger');
             if (target) observer.observe(target);
         }, 500);
+        
+        let timer;
+        this._scrollHandler = () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                this.showTopButton = window.scrollY > 500;
+            }, 50); // Only runs every 50ms
+        };
+        window.addEventListener('scroll', this._scrollHandler);
     },
-
+    scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    },
+    destroy() {
+        // 4. Remove the listener using the EXACT same variable
+        if (this._scrollHandler) {
+            window.removeEventListener('scroll', this._scrollHandler);
+            console.log("Scroll listener cleaned up!");
+        }
+    },
     async loadContent() {
         const store = window.Alpine.store('app');
         

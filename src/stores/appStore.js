@@ -7,6 +7,11 @@ export default (Alpine) => ({
     // theme: "light",
     posts: [],
     isLoading: false,
+    modal: {
+        isOpen: false,
+        title: '',
+        content: ''
+    },
 
      // This runs automatically when Alpine.store('app', ...) is called
     async init() {
@@ -138,5 +143,17 @@ export default (Alpine) => ({
             }            
             location.reload();
         }
+    },
+    openModal(title, content) {
+        this.modal.title = title;
+        this.modal.content = content;
+        this.modal.isOpen = true;
+        // Lock scroll so page doesn't move behind modal
+        document.body.style.overflow = 'hidden';
+    },
+
+    closeModal() {
+        this.modal.isOpen = false;
+        document.body.style.overflow = 'auto';
     }
 })

@@ -19,9 +19,19 @@ export const initRouter = () => {
     // 2. Wait for Alpine/Pinecone to be ready before touching settings
     document.addEventListener('alpine:init', () => {
         if (window.PineconeRouter) {
+            // Updated Settings
             window.PineconeRouter.settings.hash = false;
             window.PineconeRouter.settings.basePath = '/';
-            console.log("Router initialized successfully");
+            
+            // ADD THIS: 404 handler
+            window.PineconeRouter.settings.notfound = (context) => {
+                console.warn(`404 - Page not found: ${context.path}`);
+                // 2. Redirect to the named route 'notfound'
+                // This tells Pinecone to look for <template x-route="notfound">
+                context.route = 'notfound';
+            };
+
+            console.log("Router initialized with 404 handling");
         } else {
             console.error("Pinecone Router plugin not found!");
         }
