@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@import "buttons.css";
+@import "animations.css";
+@import "plugins.css";
+@import "pages.css";
+@import "dashboard.css";
+@import "apex-chart.css";
+
+[x-cloak] { display: none !important; } 
+
+/* Ensure Alpine's x-collapse can do its job */
+.sub-menu[x-cloak] {
+    display: none !important;
+}
+
+/* 1. Force the sub-menu container to be visible and have height */
+.menu-items li.open .sub-menu {
+    display: block !important;
+    height: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: transparent !important; /* Adjust if it's hiding text */
+}
+
+/* 2. Force the links and text inside to show up */
+.menu-items li.open .sub-menu li,
+.menu-items li.open .sub-menu li a,
+.menu-items li.open .sub-menu li a span {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #ffffff !important; /* Use #000000 if your sidebar is white */
+    font-size: 13px !important;
+    line-height: 35px !important; /* Standard sidebar height */
+    text-indent: 0 !important;
+}
+
+/* 3. Remove any theme-based 'hide' animations */
+.sub-menu {
+    transform: none !important;
+    transition: none !important;
+}
+.custom-utility {
+  @apply bg-indigo-500 text-white p-4;
+}
+
+.btn-yellow-color {
+  @apply bg-yellow-400 text-black font-semibold py-2 px-4 rounded-lg 
+         transition-colors duration-200 ease-in-out 
+         hover:bg-yellow-500 active:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300;
+}
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+} 
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.vanilla:hover {
+  filter: drop-shadow(0 0 2em #f7df1eaa);
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* src/css/main.css */
+/* FORCE RESET FOR SUBMENU */
+/* We add 'html body' to ensure our specificity is higher than pages.css */
+
+html body .page-sidebar .sidebar-menu .menu-items li ul.sub-menu {
+    display: none !important; /* Hide by default */
+    max-height: none !important;
+    overflow: hidden !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transition: none !important;
+}
+
+/* 2. FORCE SHOW WHEN OPEN */
+/* We target both the '.open' class AND the inline style Alpine adds */
+html body .page-sidebar .sidebar-menu .menu-items li.open > ul.sub-menu,
+html body .page-sidebar .sidebar-menu .menu-items li ul.sub-menu[style*="display: block"] {
+    display: block !important;
+    height: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* 3. FORCE TEXT VISIBILITY */
+html body .page-sidebar .sidebar-menu .menu-items li ul.sub-menu li {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+html body .page-sidebar .sidebar-menu .menu-items li ul.sub-menu li a,
+html body .page-sidebar .sidebar-menu .menu-items li ul.sub-menu li a span {
+    display: block !important;
+    color: rgba(255, 255, 255, 0.8) !important; /* Force light text */
+    font-size: 13px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}

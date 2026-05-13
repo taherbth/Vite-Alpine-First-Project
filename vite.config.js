@@ -19,9 +19,16 @@ export default defineConfig({
       // This is the part that handles WebP conversion
       webp: { quality: 75 }
     }),
-  ],  
+  ], 
+  build: {
+    sourcemap: false, // Disables sourcemaps for the final build
+  }, 
   server: {
     open: true, // Automatically opens the browser when you run npm run dev
+    fs: {
+      // Allow serving files from one level up to the project root
+      allow: ['..']
+    }
   }
 })
 

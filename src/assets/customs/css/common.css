@@ -1,0 +1,220 @@
+.swal-footer{
+    text-align: center !important;
+}
+.swal-button{
+    background-color: #7367f0;
+    color: #fff;
+    border-radius: 0.25em;
+    margin: 0.3125em;
+    padding: 0.625em 1.1em;
+    transition: box-shadow .1s;
+    box-shadow: 0 0 0 3px transparent;
+    font-weight: 500;
+}
+.swal-button--confirm:hover {
+    background:#7367f0 !important; 
+}
+.swal-button--cancel {
+    color: #555;
+    background-color: #efefef !important;
+}
+.navbar-nav-child{
+    padding-left: 15px;
+    display: none;
+    position: absolute;
+    left: 0;    
+    min-width: 160px;
+    z-index: 1;
+}
+.subnav:hover .navbar-nav-child {
+  display: block;
+}
+.navbar-nav-child li, .navbar-nav li{
+    list-style: none;
+}
+.nav-link-child{
+    color: #fff;
+}
+
+.col-div-full{
+    width: 100% !important;
+}
+.col-div-33{
+    width: 33%;
+}
+.col-div-width{
+    width: 50% !important;
+}
+.col-product-left-width{
+    width: 55% !important;
+}
+.col-product-right-width{
+    width: 45% !important;
+}
+.title-color{
+    background-color: #f5f5f5 !important;
+}
+.col-button-width{
+    width: 20% !important;
+}
+.panel-title-margin{
+    margin-bottom: 20px !important;
+}
+.padding-top{
+    padding-top: 30px;
+}
+table.dataTable thead th, table.dataTable thead td {
+     border-bottom: 1px solid #ddd !important;
+}
+.dataTables_wrapper .dataTables_info{
+    clear: none !important;
+}
+.btn-actions{
+    /*display: block;*/
+    width:200px !important;
+}
+.table thead tr th:first-child {
+    padding-left: 11px !important;
+}
+.toggle-on-off label{
+    font-weight: 700;
+    padding-left: 30px;
+}
+.switchery{
+    width:100px !important;
+}
+
+.attributes-color-container {
+    width: 40px;
+    height: 25px;
+    display: block;
+    border: solid 1px #000;
+}
+ul.permission-list-container{
+    list-style-type: none !important;
+    font-family: tahoma, arial, helvetica;
+    font-size: 10pt;
+    white-space: nowrap;
+}
+
+li.module-name-li{
+    color: #2c2c2c !important;
+    font-weight: bold;
+}
+
+li.permission-name-li{
+    color: #2c2c2c !important;
+    font-weight: normal;
+}
+.permission-name-span{
+    padding-left: 2px;
+}
+.set-permission{
+    padding-top: 10px;
+}
+
+.product_combination{
+    float: left;
+    padding-top: 10px;
+}
+.product_quantity{
+    float: left;
+    padding: 10px;
+}
+
+.btn-challan-product-div{
+    min-width: 100% !important;
+    min-height: 100% !important;
+}
+.btn-challan-product-search{
+    min-width: 100% !important;
+    min-height: 100% !important;
+    padding-top: 30px !important;
+}
+.attribute-values{
+    float: left;
+    padding:5px 5px 5px 0;
+}
+.combination-quantity{
+    float: left;
+    padding: 5px;
+}
+svg {
+    width: 40% !important;
+    padding-top: 60px;
+}
+.bar-code-text{
+    padding-left: 50px;
+}
+.hide_add_to_challan_button{
+    display: none;
+}
+.show_add_to_challan_button{
+    display: block;
+}
+.multiple-select{
+    display: none;
+}
+
+.input-select-printer{
+    min-width: 200px;
+}
+.custom-back-button{
+    margin-bottom: 10px;
+}
+.create-button, .delete-button, .bg-success, .btn-challan-product-search{
+    color: #ffffff;
+    background-color: #F26716;
+    border-color: #F26716;
+}
+.create-button.hover, .create-button:hover, .edit-button.hover, .edit-button:hover,.open .dropdown-toggle.create-button {
+    background-color: #40d9ca;
+    border-color: #40d9ca;
+    color: #ffffff;
+}
+.create-button:focus {
+    color: #ffffff;
+    background-color: #10cfbd;
+    border-color: #10cfbd;
+}
+
+.edit-button{
+    color: #ffffff;
+    background-color: #f3ce19de;
+    border-color: #f3ce19de;
+}
+
+.product_add_btn, .coupon-apply-btn, .switchery {
+    color: #ffffff;
+    background-color: #88c1e7;
+    border-color: #88c1e7;
+}
+.sales-button-size{
+    width: 98% !important; 
+    height: 80px;  
+    font-size: 30px;
+    font-family: sans-serif; 
+    line-height: 30px;
+}
+.header-text-class{
+    width: 70%;
+    vertical-align: middle;
+    padding-top: 0.9%;
+    padding-left: 33%;
+}
+.user-info{
+    padding-right: 4%;
+}
+.package-status-btn.Active{
+    background-color: #40d9ca;
+}
+.package-status-btn.Inactive{
+    background-color: #f3ce19de;
+}
+.package-status-btn.Expired{
+    background-color: #F26716;
+}
+.package-status-label{
+    font-weight: bold;
+    color: #fff;
+}

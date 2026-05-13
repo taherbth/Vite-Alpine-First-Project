@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('_x_app-theme');           
+            // Check if user specifically set dark OR if they have no setting but system is dark
+            if (savedTheme === '"dark"' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('bg-gray-900', 'text-white');
+            } else {
+                document.documentElement.classList.remove('bg-gray-900','text-white');
+            }
+        })();
+    </script>     
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"> 
+
+    <title>Vite + Tailwind + Alpine</title>
+    
+  </head>
+  <body x-data class="fixed-header">   
+    <!-- BEGIN SIDEBPANEL-->
+    <nav class="page-sidebar" data-pages="sidebar">
+        <!-- BEGIN SIDEBAR MENU TOP TRAY CONTENT-->
+        <div class="sidebar-overlay-slide from-top">
+            <div class="row">
+                <div class="col-xs-6 no-padding">
+                    <a href="#" class="p-l-40">
+                        <img src="{{ asset('images/social_app.svg') }}" alt="socail" data-src="{{ asset('images/social_app.svg') }}" data-src-retina="{{ asset('images/social_app.svg') }}" width="78" height="22" >
+                    </a>
+                </div>
+                <div class="col-xs-6 no-padding">
+                    <a href="#" class="p-l-10">
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-6 m-t-20 no-padding">
+                    <a href="#" class="p-l-40">
+                        <img src="{{ asset('images/calendar_app.svg') }}" alt="socail" data-src="{{ asset('images/calendar_app.svg') }}" data-src-retina="{{ asset('images/calendar_app.svg') }}" >
+                    </a>
+                </div>
+                <div class="col-xs-6 m-t-20 no-padding">
+                    <a href="#" class="p-l-10">
+                        <img src="{{ asset('images/add_more.svg') }}" alt="socail" data-src="{{ asset('images/add_more.svg') }}" data-src-retina="{{ asset('images/add_more.svg') }}" >
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- END SIDEBAR MENU TOP TRAY CONTENT-->
+        <!-- BEGIN SIDEBAR MENU HEADER-->
+        <div class="sidebar-header">
+            <img src="{{ asset('images/logo_white.png') }}" alt="logo" class="brand" data-src="{{ asset('images/logo_white.png') }}" data-src-retina="{{ asset('images/logo_white.png') }}" width="78" height="22">
+            <div class="sidebar-header-controls">                 
+                <button type="button" class="btn btn-link visible-lg-inline" data-toggle-pin="sidebar"><i class="fa fs-12"></i></button>
+            </div>
+        </div>
+        <!-- END SIDEBAR MENU HEADER-->
+        <!-- START SIDEBAR MENU -->   
+        <!-- <nav x-data="navigation">
+                <p x-text="openMenu ?? 'none'"></p>
+                <button @click="toggle('test')">Toggle</button>
+            </nav> -->
+                 
+            <nav x-data="navigation" class="sidebar-container">
+                <ul class="menu-items">
+                    <li :class="{ 'open active': isActive('/frontend/dashboard') }">
+                        <a href="/frontend/dashboard" @click="openMenu = null">
+                            <span class="title">Dashboard</span>
+                        </a>
+                        <span class="icon-thumbnail bg-success"><i class="pg-home"></i></span>
+                    </li>
+
+                     <!-- The parent LI gets the 'open' class when openMenu matches -->
+                    <li :class="{ 'open': openMenu === 'customers' }">
+                        <a href="javascript:void(0)" @click.prevent="toggle('customers')">
+                            <span class="title">Customers</span>
+                            <span class="arrow" :class="{ 'open': openMenu === 'customers' }"></span>
+                        </a>
+                        
+                        <!-- Alpine manages the state here -->
+                        <ul class="sub-menu" 
+                            x-bind:class="{ 'open': openMenu === 'customers' }"
+                            x-cloak>
+                            <li :class="{ 'active': isActive('/frontend/customer') }">
+                                <a href="/frontend/customer">All Customers</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li :class="{ 'open': openMenu === 'sales' }">
+                        <a href="javascript:void(0)" @click.prevent="toggle('sales')">
+                            <span class="title">Sales</span>
+                            <span class="arrow" :class="{ 'open': openMenu === 'sales' }"></span>
+                        </a>
+                        <span class="icon-thumbnail"><i class="fa fa-shopping-cart"></i></span>
+                        
+                        <ul class="sub-menu" 
+                            x-bind:class="{ 'open': openMenu === 'customers' }"
+                            x-cloak>
+                            <li :class="{ 'active': isActive('/frontend/sale/create') }">
+                                <a href="/frontend/sale/create">
+                                    <span class="title">Create Sale</span>
+                                </a>
+                            </li>
+                            <li :class="{ 'active': isActive('/frontend/sale') }">
+                                <a href="/frontend/sale">
+                                    <span class="title">History</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        <!-- END SIDEBAR MENU -->
+    </nav>
+    <!-- END SIDEBAR -->
+    <!-- END SIDEBPANEL-->
+    <!-- START PAGE-CONTAINER -->
+    <div class="page-container">
+        <!-- START HEADER -->
+        <div class="header ">        
+            <div class="pull-left text-center font-montserrat text-uppercase demo-fs-23 header-text-class"> 
+                XYZ Company          
+            </div>  
+            <div class="pull-right user-info" style="width:30%">
+                <!-- START User Info -->
+                    <div class="visible-lg visible-md m-t-10">        
+                        <div class="pull-left p-r-10 p-t-10 fs-16 font-heading" style="padding-left:40%">
+                            <h3 class="font-montserrat no-margin text-uppercase demo-fs-23"></h3>
+                            <span class="semi-bold"> 
+                                ABU TAHER
+                            </span>
+                        </div>
+                        <div class="dropdown pull-right">       
+                            <ul class="navbar-nav ml-auto py-4 py-md-0">
+                                <li class="subnav nav-item pl-4 pl-md-0 ml-0 ml-md-4">
+                                    <button class="profile-dropdown-toggle subnav" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="thumbnail-wrapper d32 circular inline m-t-5">
+                                            <img src="/uploads/default_user_profile_images/default_images.png" alt="logo" data-src="uploads/default_user_profile_images/default_images.png" data-src-retina="uploads/default_user_profile_images/default_images.png" width="32" height="32" >
+                                        </span>
+                                    </button>
+                                    <ul class="navbar-nav-child dropdown-menu profile-dropdown">   
+                                        <li><a href=""><i class="pg-settings_small"></i> Settings</a>
+                                        </li>
+                                        <li><a href="#"><i class="pg-signals"></i> Help </a>
+                                        <!-- <li><a href="#"><i class="pg-outdent"></i> Feedback</a>  </li> -->                   
+                                        </li>
+                                        <li class="bg-master-lighter">
+                                            <span class="pull-left">                             
+                                                <input type="hidden" name="token" id="token" value="">
+                                                <button type="button" id="logout">Logout</button>                              
+                                            </span>
+                                            <span class="pull-right"><i class="pg-power"></i></span>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                <!-- END User Info -->
+            </div>
+        </div>
+        
+        <!-- END HEADER -->
+        <!-- START PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrapper">
+            <!-- START PAGE CONTENT -->
+            <div class="content">
+                <div id="">
+                    <main id="main">
+                        <!-- Section - Bootstrap Brain Component -->
+                        <!-- Breadcrumb -->
+                        <section class="py-3 py-md-4 py-xl-5 bg-light">
+                            <div class="container">
+                              <div class="row">
+                                <div class="col-12">
+                                  <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb m-0 fs-7">
+                                      <li class="breadcrumb-item"><a class="link-primary text-decoration-none" href="index.html">Home</a></li>
+                                      <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                                    </ol>
+                                  </nav>
+                                </div>
+                              </div>
+                                </div>
+                        </section>
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                              <div class="row">              
+                                  <div class="col-9 col-md-9 col-lg-9 col-xl-9">
+                                    <div class=""> 
+                                      <h5 class="card-title widget-card-title mb-3">Select Outlet To Generate Dashborad Report For Specific Outlet</h5>
+                                      <select class ="form-control">
+                                        <option value="" >Select Outlet</option>
+                                        <option value="All" >All</option>                    
+                                      </select>          
+                                    </div> 
+                                  </div>
+                              </div>
+                            </div>
+                        </section>
+                        <!-- Section - Daily / Wekly / Monthly Sales Overview -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                              <div class="row gy-3 gy-md-4">
+                                <div class="col-12 col-sm-6 col-xl-3">
+                                  <div class="card widget-card border-light shadow-sm">
+                                    <div class="card-body p-4">
+                                      <div class="row">
+                                        <div class="col-8">
+                                          <h5 class="card-title widget-card-title mb-3">Daily Sales</h5>
+                                          <h4 class="card-subtitle text-body-secondary m-0">XXX</h4>
+                                        </div>
+                                        <div class="col-4">
+                                          <div class="d-flex justify-content-end">
+                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                              <i class="bi bi-cart fs-4"></i>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row">
+                                        <div class="col-12">
+                                          <div class="d-flex align-items-center mt-3">
+                                            <span class="lh-1 me-3 rounded-circle p-1 d-flex align-items-center justify-content-center" class="daily_sales_incread_decreased_percentage_class">
+                                              <i class="bi bi-arrow-right-short bsb-rotate-45"></i>
+                                            </span>
+                                            <div>
+                                              <p class="fs-7 mb-0">XXX%</p>
+                                              <p class="fs-7 mb-0 text-secondary">since last day</p>
+                                            </div>                        
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row">
+                                        <div class="col-12">
+                                          <div class="d-flex align-items-center mt-3">
+                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                              <i class="bi bi-download"></i>
+                                            </span>
+                                            <div>
+                                               <p class="fs-7 mb-0 text-secondary"><a href="'/frontend/dashboard/dailyreport'" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a></p>
+                                            </div>                        
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-xl-3">
+                                  <div class="card widget-card border-light shadow-sm">
+                                    <div class="card-body p-4">
+                                      <div class="row">
+                                        <div class="col-8">
+                                          <h5 class="card-title widget-card-title mb-3">Weekly Sales </h5>
+                                          <h4 class="card-subtitle text-body-secondary m-0">XXX</h4>
+                                        </div>
+                                        <div class="col-4">
+                                          <div class="d-flex justify-content-end">
+                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                              <i class="bi bi-cart fs-4"></i>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row">
+                                        <div class="col-12">
+                                          <div class="d-flex align-items-center mt-3">
+                                            <span class="lh-1 me-3 rounded-circle p-1 d-flex align-items-center justify-content-center" >
+                                              <i class="bi bi-arrow-right-short bsb-rotate-45"></i>
+                                            </span>
+                                            <div>
+                                              <p class="fs-7 mb-0">XXX%</p>
+                                              <p class="fs-7 mb-0 text-secondary">since last week</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row">
+                                        <div class="col-12">
+                                          <div class="d-flex align-items-center mt-3">
+                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-download"></i>
+                                            </span>
+                                            <div>
+                                               <p class="fs-7 mb-0 text-secondary"><a href="'/frontend/dashboard/weeklyreport'" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a></p>
+                                            </div>                        
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-xl-3">
+                                  <div class="card widget-card border-light shadow-sm">
+                                    <div class="card-body p-4">
+                                      <div class="row">
+                                        <div class="col-8">
+                                          <h5 class="card-title widget-card-title mb-3">Monthly Sales </h5>
+                                          <h4 class="card-subtitle text-body-secondary m-0"> XXX</h4>
+                                        </div>
+                                        <div class="col-4">
+                                          <div class="d-flex justify-content-end">
+                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cart fs-4"></i>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row">
+                                        <div class="col-12">
+                                          <div class="d-flex align-items-center mt-3">
+                                            <span class="lh-1 me-3 rounded-circle p-1 d-flex align-items-center justify-content-center" class="monthly_sales_incread_decreased_percentage_class">
+                                              <i class="bi bi-arrow-right-short bsb-rotate-n45"></i>
+                                            </span>
+                                            <div>
+                                              <p class="fs-7 mb-0">XXX%</p>
+                                              <p class="fs-7 mb-0 text-secondary">since last month</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row">
+                                        <div class="col-12">
+                                          <div class="d-flex align-items-center mt-3">
+                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                              <i class="bi bi-download"></i>
+                                            </span>
+                                            <div>
+                                               <p class="fs-7 mb-0 text-secondary"> <a href="'/frontend/dashboard/monthlyreport'" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a></p>
+                                            </div>                        
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-xl-3">
+                                  <div class="card widget-card border-light shadow-sm">
+                                    <div class="card-body p-4">
+                                      <div class="row">
+                                        <div class="col-8">
+                                          <h5 class="card-title widget-card-title mb-3">Sales Between</h5>
+                                        </div>
+                                        <div class="col-4">
+                                          <div class="d-flex justify-content-end">
+                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                              <i class="bi bi-cart fs-4"></i>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>                  
+                                      <div class="row" style="padding-top:10px;">
+                                        <div class="col-md-12 m-b-10">
+                                          <div class="">
+                                              <input id="from_date" class ="form-control" placeholder="From Date">  
+                                          </div>
+                                          <div class="">
+                                              <input id="to_date" class ="form-control" placeholder="To Date">  
+                                          </div>                     
+                                        </div> 
+                                      </div>   
+                                      <div class="row">
+                                        <div class="col-12">
+                                          <div class="d-flex align-items-center mt-3">
+                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                              <i class="bi bi-download"></i>
+                                            </span>
+                                            <div>
+                                               <p class="fs-7 mb-0 text-secondary"> <a href="'/frontend/dashboard/reportbetween?from_date='+from_date+'&'+'to_date='+to_date" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a></p>
+                                            </div>                        
+                                          </div>
+                                        </div>
+                                      </div>             
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                        </section>
+                        <!-- Section - Yearly Sales and Department Sales Overview -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                              <div class="row gy-3 gy-md-4">
+                                <div class="col-12 col-lg-6 col-xl-7">
+                                  <!-- Chart 1 - Bootstrap Brain Component -->
+                                  <div class="card widget-card border-light shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                      <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                        <div class="mb-3 mb-sm-0">
+                                          <h5 class="card-title widget-card-title">Sales Overview</h5>
+                                        </div>
+                                        <div class="row">
+                                          <div class="col-5">
+                                            <input v-model.lazy="yearly_sales_overview.year" id="yearly_sales_overview_year" class ="form-control" placeholder="Select Year" > 
+                                          </div>
+                                          <div class="col-1 col-md-1">
+                                            <button class="btn btn-success btn-cons sales-button-size product_add_btn" onclick="drawYearlyRevenueGraph()">Generate Overview</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div id="bsb-chart-1"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="col-12 col-lg-6 col-xl-5">
+                                  <!-- Chart 4 - Bootstrap Brain Component -->
+                                  <div class="card widget-card border-light shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                      <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                        <div class="mb-3 mb-sm-0">
+                                          <h5 class="card-title widget-card-title">Department Sales</h5>
+                                        </div>
+                                        <div class="row">
+                                          <div class="col-5">
+                                            <input v-model.lazy="category_wise_sales_overview.year" id="category_wise_sales_overview" class ="form-control" placeholder="Select Year" > 
+                                          </div>
+                                          <div class="col-1 col-md-1">
+                                            <button class="btn btn-success btn-cons sales-button-size product_add_btn" onclick="drawCategoryWiseSalesGraph()">Generate Overview</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div id="bsb-chart-4"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                        </section>
+                        <!-- Section - Recent Transactions -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                              <div class="row gy-3 gy-md-4">
+                                <div class="col-12 col-lg-12 col-xl-12">
+                                  <!-- Timeline 8 - Bootstrap Brain Component -->
+                                  <div class="card widget-card bsb-timeline-8 border-light shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                      <h5 class="card-title widget-card-title mb-3">Recent Transactions</h5>
+                                      <ul class="timeline">
+                                        <li class="timeline-item">
+                                          <div class="timeline-body">
+                                            <div class="timeline-meta">
+                                              <!-- converted_duration -->
+                                              <span>XXX</span>
+                                            </div>
+                                            <div class="timeline-content timeline-indicator">
+                                              <h6 class="mb-1">Amount 2000tk received in the 
+                                               Payment method of Total Amount 50000Tk </h6>
+                                              <span class="text-secondary fs-7">Sales executive: ABU</span>
+                                            </div>
+                                          </div>
+                                        </li>                    
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>          
+                              </div>
+                            </div>
+                        </section>
+                        <!-- Section - Bootstrap Brain Component -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                              <div class="row gy-3 gy-md-4">            
+                                <div class="col-12 col-lg-6 col-xl-7">
+                                  <!-- Chart 4 - Bootstrap Brain Component -->
+                                  <div class="card widget-card border-light shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                      <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                        <div class="mb-3 mb-sm-0">
+                                          <h5 class="card-title widget-card-title">Revenue Stats</h5>
+                                        </div>
+                                        <div class="row">
+                                          <div class="col-5">
+                                            <input id="revenue_stats" class ="form-control" placeholder="Select Year" >  
+                                          </div>
+                                          <div class="col-1 col-md-1">
+                                            <button class="btn btn-success btn-cons sales-button-size product_add_btn" onclick="drawrevenueStatsGraph()">Generate Overview</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div id="bsb-chart-3"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="col-12 col-lg-6 col-xl-5">
+                                  <!-- Calendar 1 - Bootstrap Brain Component -->
+                                  <div class="card widget-card border-light shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                      <div id="bsb-calendar-1" class="fc fc-media-screen fc-direction-ltr fc-theme-bootstrap5 bsb-calendar-theme"></div>
+                                    </div>
+                                  </div>
+                                </div>            
+                              </div>
+                            </div>
+                        </section>
+                    </main>
+                </div>
+            </div>
+            <!-- END PAGE CONTENT -->
+            <!-- START COPYRIGHT -->
+            <!-- START CONTAINER FLUID -->
+            <div class="container-fluid container-fixed-lg footer">
+                <div class="copyright sm-text-center">
+                    <p class="small no-margin pull-left sm-pull-reset">
+                        <span class="hint-text">Copyright © 2018 </span>
+                        <span class="font-montserrat">Logic POS</span>.
+                        <span class="hint-text">All rights reserved. </span>
+                        <span class="sm-block"><a href="#" class="m-l-10 m-r-10">Terms of use</a> | <a href="#" class="m-l-10">Privacy Policy</a></span>
+                    </p>
+                    <p class="small no-margin pull-right sm-pull-reset">
+                        <a href="#">Hand-crafted</a> <span class="hint-text">&amp; Made with Love ®</span>
+                    </p>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+            <!-- END COPYRIGHT -->
+        </div>
+        <!-- END PAGE CONTENT WRAPPER -->
+    </div>
+    <!-- END PAGE CONTAINER -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+

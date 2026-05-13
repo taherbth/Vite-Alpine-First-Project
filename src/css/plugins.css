@@ -1,0 +1,17 @@
+/* resources/css/plugins.css */
+
+@import "../assets/plugins/pace/pace-theme-flash.css";
+@import "../assets/plugins/boostrapv3/css/bootstrap.min.css";
+@import "../assets/plugins/font-awesome/css/font-awesome.css";
+@import "../assets/plugins/jquery-scrollbar/jquery.scrollbar.css";
+@import "../assets/plugins/bootstrap-select2/select2.css";
+@import "../assets/plugins/switchery/css/switchery.min.css";
+@import "../assets/plugins/nvd3/nv.d3.min.css";
+@import "../assets/plugins/mapplic/css/mapplic.css";
+@import "../assets/plugins/rickshaw/rickshaw.min.css";
+@import "../assets/plugins/bootstrap-datepicker/css/datepicker3.css";
+@import "../assets/plugins/jquery-metrojs/MetroJs.css";
+@import "../assets/plugins/bootstrap-tag/bootstrap-tagsinput.css";
+@import "../assets/plugins/jquery-datatable/media/css/jquery.dataTables.css";
+@import "../assets/plugins/jquery-datatable/extensions/FixedColumns/css/dataTables.fixedColumns.min.css";
+@import "../assets/plugins/datatables-responsive/css/datatables.responsive.css";

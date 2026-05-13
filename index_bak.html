@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('_x_app-theme');           
+            // Check if user specifically set dark OR if they have no setting but system is dark
+            if (savedTheme === '"dark"' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('bg-gray-900', 'text-white');
+            } else {
+                document.documentElement.classList.remove('bg-gray-900','text-white');
+            }
+        })();
+    </script>     
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + Tailwind + Alpine</title>
+  </head>
+  <body x-data :class="$store.app.theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'">   
+    <h1 x-data='appData' x-text="features[0].title"> </h1>
+    <nav class="p-4 border-b flex justify-between items-center">
+        <img :src="$store.app.assets.logo" class="h-8" alt="Logo">
+        
+        <div>
+            Welcome, <span x-text="$store.app.user.name" class="font-bold"></span>
+        </div>
+        <button 
+            @click="$store.app.toggleTheme()"
+            class="px-4 py-2 rounded-full border border-current hover:opacity-70 transition"
+        >
+            Switch to <span x-text="$store.app.theme === 'light' ? 'Dark' : 'Light'"></span> 
+        </button>
+
+        <button 
+            @click="$store.app.resetSettings()"
+            class="px-4 py-2 rounded-full border border-current hover:opacity-70 transition ml-4 btn-yellow-color"
+        >
+            Reset Theme
+        </button>
+    </nav>
+    <header class="p-10 text-center">
+        <h1 class="text-3xl font-bold">Global State in Action</h1>
+        <p class="mt-4">The theme is currently: <strong x-text="$store.app.theme"></strong></p>
+        
+        <div class="mt-6">
+            <img :src="$store.app.assets.banner" class="rounded-xl shadow-lg mx-auto" alt="Banner">
+        </div>
+    </header>
+    <nav x-data="navigation" class="relative">
+        <button @click="toggle()" class="custom-utility transition hover:bg-gray-200 p-2 rounded">
+            Menu
+        </button>
+        
+        <ul x-show="open" @click.away="open = false" class="absolute bg-white shadow-lg border rounded mt-2 p-2">
+            <template x-for="(link, index) in links" :key="index">
+                <li>                    
+                    <a :href="link.url" x-link @click="open = false" x-text="link.label"></a>
+                </li>
+            </template>
+        </ul>
+    </nav>
+    <!-- The Tailwind Spinner Component -->
+    <div x-show="$store.app.isLoading" 
+     x-transition.opacity
+     class="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">    
+        <div class="flex flex-col items-center">
+            <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            
+            <span class="mt-2 text-sm font-medium text-gray-600">Fetching Data...</span>
+        </div>
+    </div>
+    <!-- <template x-if="$store.app.isLoading">
+        <div class="space-y-4">
+            <template x-for="i in 5">
+                <div class="animate-pulse flex space-x-4 p-4 border rounded-lg">
+                    <div class="rounded-full bg-gray-200 h-10 w-10"></div>
+                    <div class="flex-1 space-y-3 py-1">
+                        <div class="h-2 bg-gray-200 rounded"></div>
+                        <div class="h-2 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template> -->
+    <!-- The Toast UI Component -->
+    <!-- <div class="fixed top-5 right-5 z-[100] flex flex-col gap-2">
+        <template x-for="toast in $store.app.toasts" :key="toast.id">
+            <div x-show="true" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="translate-y-10 opacity-0"
+                 x-transition:enter-end="translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-end="opacity-0 scale-90"
+                 class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3">
+                
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                
+                <span x-text="toast.message" class="text-sm font-medium"></span>
+            </div>
+        </template>
+    </div> -->
+    <!-- Update the Toast UI For Re-try button -->
+    <div class="fixed top-5 right-5 z-[100] flex flex-col gap-2">
+        <template x-for="toast in $store.app.toasts" :key="toast.id">
+            <div 
+                x-transition
+                :class="toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'"
+                class="text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-4 min-w-[320px] group relative"
+            >
+                <div class="flex items-center gap-2 flex-grow">
+                    <span x-text="toast.type === 'success' ? '✅' : '⚠️'"></span>
+                    <span x-text="toast.message" class="text-sm font-medium"></span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <template x-if="!!toast.action">
+                        <button 
+                            @click="toast.action(); $store.app.removeToast(toast.id)"
+                            class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-[10px] font-bold uppercase transition"
+                        >
+                            Retry
+                        </button>
+                    </template>
+
+                    <button 
+                        @click="$store.app.removeToast(toast.id)"
+                        class="opacity-70 hover:opacity-100 transition-opacity p-1"
+                        aria-label="Close notification"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                    </div>
+        </template>
+    </div> 
+    <div id="app-content" class="p-6" x-data x-router>
+        <div :key="$router.path" x-show="true" x-transition:enter="transition ease-out duration-700" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <template x-route="/" x-template>
+                <div>
+                    <h1 class="text-2xl font-bold">Welcome Home</h1>
+                    <p>This is the landing page.</p>
+                </div>
+            </template>
+            <template x-route="/posts" x-template x-handler="authGuard">
+                <div x-data="postsView" class="relative">
+                    <button 
+                        x-show="showTopButton"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-y-10"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 translate-y-10"
+                        @click="scrollToTop()"
+                        class="fixed bottom-8 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-50 focus:outline-none !bg-black"
+                        aria-label="Scroll to top"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                        </svg>
+                    </button>
+                    <h1 class="text-3xl font-bold mb-8">Latest Updates</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <template x-for="post in $store.app.posts" :key="post.id">
+                            <div class="p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all">
+                                <h2 class="text-xl font-bold mb-3 capitalize text-gray-800" x-text="post.title"></h2>
+                                
+                                <p class="text-gray-600 line-clamp-2" x-text="post.body"></p>
+                                
+                                <button 
+                                    @click="$store.app.openModal(post.title, post.body)"
+                                    class="mt-4 flex items-center text-sm font-bold text-black hover:underline group"
+                                >
+                                    Read more 
+                                    <svg class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    <div id="infinite-scroll-trigger" style="background: rgba(255,0,0,0.2); border: 2px dashed red; min-height: 50px;" class="py-10 flex justify-center border-t border-gray-100">
+                        <template x-if="$store.app.isLoading">
+                            <div class="flex items-center gap-2">
+                                <svg class="animate-spin h-5 w-5 text-blue-600" ...></svg>
+                                <span>Loading...</span>
+                            </div>
+                        </template>                        
+                        <template x-if="!canLoadMore && !$store.app.isLoading">
+                            <span class="text-gray-400">You've reached the end!</span>
+                        </template>
+                    </div>
+                    
+                    <!-- <div class="text-center py-20">
+                        <div class="text-64 text-gray-300 mb-4">📭</div>
+                        <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
+                        <p class="text-gray-500">Check back later for new updates.</p>
+                    </div> -->
+                </div>
+            </template>            
+           <template x-if="!$store.app.isLoading && $store.app.posts.length === 0">
+                <div class="text-center py-20">
+                    <div class="text-64 text-gray-300 mb-4">📭</div>
+                    <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
+                    <p class="text-gray-500">Check back later for new updates.</p>
+                </div>
+            </template> 
+            <template x-route="/about" x-template>
+                <div><h1>About Us</h1></div>
+            </template>
+            <template x-route="/contact" x-template>
+                <div x-data="contactForm">
+                    <h1 class="text-2xl font-bold mb-4">Contact Us</h1>
+                    <form @submit.prevent="submitForm()" class="space-y-4 max-w-md">
+                        <div>
+                            <label class="block text-sm font-medium">Email</label>
+                            <input type="email" x-model="formData.email" 
+                                   :class="errors.email ? 'border-red-500' : 'border-gray-300'"
+                                   class="w-full p-2 border rounded text-gray-900">
+                            <p x-show="errors.email" x-text="errors.email" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Message</label>
+                            <textarea x-model="formData.message" class="w-full p-2 border rounded text-gray-900" rows="4"></textarea>
+                            <p x-show="errors.message" x-text="errors.message" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </template>
+            <template x-route="/notfound">
+               <div class="text-center p-10">
+                  <h1 class="text-4xl">404 - Not Found</h1>
+                  <a href="/" x-route:link>Go Home</a>
+               </div>
+            </template>
+        </div>
+    </div>
+    <!-- The Modal UI -->
+    <div 
+        x-show="$store.app.modal.isOpen" 
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        x-cloak
+    >
+        <div 
+            class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-0 overflow-hidden relative"
+            x-transition:enter="..." 
+            @click.away="$store.app.closeModal()"
+        >
+            <div class="p-6 border-b bg-gray-50">
+                <h2 class="text-2xl font-bold capitalize pr-8" x-text="$store.app.modal.title"></h2>
+                <button @click="$store.app.closeModal()" class="absolute top-6 right-6 text-gray-400 hover:text-black">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-8 max-h-[60vh] overflow-y-auto">
+                <p class="text-gray-700 leading-relaxed first-letter:text-4xl first-letter:font-bold first-letter:mr-2 first-letter:float-left" x-text="$store.app.modal.content"></p>
+            </div>
+            <div class="p-6 bg-gray-50 border-t text-right">
+                <button @click="$store.app.closeModal()" class="bg-black text-white px-6 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

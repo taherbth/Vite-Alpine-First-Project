@@ -4,7 +4,6 @@
     <script>
         (function() {
             const savedTheme = localStorage.getItem('_x_app-theme');           
-            // Check if user specifically set dark OR if they have no setting but system is dark
             if (savedTheme === '"dark"' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('bg-gray-900', 'text-white');
             } else {
@@ -14,270 +13,513 @@
     </script>     
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"> 
     <title>Vite + Tailwind + Alpine</title>
   </head>
-  <body x-data :class="$store.app.theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'">   
-    <h1 x-data='appData' x-text="features[0].title"> </h1>
-    <nav class="p-4 border-b flex justify-between items-center">
-        <img :src="$store.app.assets.logo" class="h-8" alt="Logo">
-        
-        <div>
-            Welcome, <span x-text="$store.app.user.name" class="font-bold"></span>
-        </div>
-        <button 
-            @click="$store.app.toggleTheme()"
-            class="px-4 py-2 rounded-full border border-current hover:opacity-70 transition"
-        >
-            Switch to <span x-text="$store.app.theme === 'light' ? 'Dark' : 'Light'"></span> 
-        </button>
 
-        <button 
-            @click="$store.app.resetSettings()"
-            class="px-4 py-2 rounded-full border border-current hover:opacity-70 transition ml-4 btn-yellow-color"
-        >
-            Reset Theme
-        </button>
-    </nav>
-    <header class="p-10 text-center">
-        <h1 class="text-3xl font-bold">Global State in Action</h1>
-        <p class="mt-4">The theme is currently: <strong x-text="$store.app.theme"></strong></p>
-        
-        <div class="mt-6">
-            <img :src="$store.app.assets.banner" class="rounded-xl shadow-lg mx-auto" alt="Banner">
+  <!-- FIX 1: x-data="navigation" moved here from the nested inner nav.
+       The body is now the single Alpine root for the whole page. -->
+  <body x-data="navigation"
+        class="fixed-header"
+        :class="{
+          'sidebar-open':   sidebarVisible,
+          'sidebar-pinned': sidebarPinned
+        }">
+
+    <!-- BEGIN SIDEBAR PANEL -->
+    <!-- FIX 2: .page-sidebar stays as-is (pages.css targets this class).
+         The old nested <nav x-data="navigation"> is completely removed. -->
+    <nav class="page-sidebar" data-pages="sidebar">
+        <!-- BEGIN SIDEBAR MENU TOP TRAY CONTENT -->
+        <div class="sidebar-overlay-slide from-top">
+            <div class="row">
+                <div class="col-xs-6 no-padding">
+                    <a href="#" class="p-l-40">
+                        <img src="/images/social_app.svg" alt="social" width="78" height="22">
+                    </a>
+                </div>
+                <div class="col-xs-6 no-padding">
+                    <a href="#" class="p-l-10"></a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-6 m-t-20 no-padding">
+                    <a href="#" class="p-l-40">
+                        <img src="/images/calendar_app.svg" alt="calendar">
+                    </a>
+                </div>
+                <div class="col-xs-6 m-t-20 no-padding">
+                    <a href="#" class="p-l-10">
+                        <img src="/images/add_more.svg" alt="add more">
+                    </a>
+                </div>
+            </div>
         </div>
-    </header>
-    <nav x-data="navigation" class="relative">
-        <button @click="toggle()" class="custom-utility transition hover:bg-gray-200 p-2 rounded">
-            Menu
-        </button>
-        
-        <ul x-show="open" @click.away="open = false" class="absolute bg-white shadow-lg border rounded mt-2 p-2">
-            <template x-for="(link, index) in links" :key="index">
-                <li>                    
-                    <a :href="link.url" x-link @click="open = false" x-text="link.label"></a>
+        <!-- END SIDEBAR MENU TOP TRAY CONTENT -->
+
+        <!-- BEGIN SIDEBAR MENU HEADER -->
+        <div class="sidebar-header">
+            <img src="/images/logo_white.png" alt="logo" class="brand" width="78" height="22">
+            <div class="sidebar-header-controls">
+                <!-- FIX 3: pin button now calls Alpine togglePin() instead of data-toggle-pin -->
+                <button type="button" class="btn btn-link visible-lg-inline" @click="togglePin()">
+                    <i class="fa fs-12"></i>
+                </button>
+            </div>
+        </div>
+        <!-- END SIDEBAR MENU HEADER -->
+
+        <!-- BEGIN SIDEBAR MENU -->
+        <!-- FIX 4: Plain .sidebar-menu div — no x-data, no x-cloak anywhere.
+             Alpine directives work because <body> is the x-data root.
+             Sub-menu visibility is controlled entirely by li.open CSS rule in main.css. -->
+        <div class="sidebar-menu">
+            <ul class="menu-items">
+                <!-- Dashboard -->
+                <li :class="{ 'open active': isActive('/frontend/dashboard') }">
+                    <a href="/frontend/dashboard" @click="openMenu = null">
+                        <span class="title">Dashboard</span>
+                    </a>
+                    <span class="icon-thumbnail bg-success"><i class="pg-home"></i></span>
                 </li>
-            </template>
-        </ul>
+
+                <!-- Customers -->
+                <li :class="{ 'open': openMenu === 'customers' }">
+                    <a href="#" @click.prevent="toggle('customers')">
+                        <span class="title">Customers</span>
+                        <span class="arrow" :class="{ open: openMenu === 'customers' }"></span>
+                    </a>
+                    <span class="icon-thumbnail"><i class="fa fa-users"></i></span>
+                    <!-- FIX 5: No x-cloak, no x-bind:class on the ul.
+                         CSS rule: li.open > ul.sub-menu { display: block } handles visibility. -->
+                    <ul class="sub-menu">
+                        <li :class="{ 'active': isActive('/frontend/customer') }">
+                            <a href="/frontend/customer"><span>All Customers</span></a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Sales -->
+                <li :class="{ 'open': openMenu === 'sales' }">
+                    <a href="#" @click.prevent="toggle('sales')">
+                        <span class="title">Sales</span>
+                        <span class="arrow" :class="{ open: openMenu === 'sales' }"></span>
+                    </a>
+                    <span class="icon-thumbnail"><i class="fa fa-shopping-cart"></i></span>
+                    <ul class="sub-menu">
+                        <li :class="{ 'active': isActive('/frontend/sale/create') }">
+                            <a href="/frontend/sale/create"><span>Create Sale</span></a>
+                        </li>
+                        <li :class="{ 'active': isActive('/frontend/sale') }">
+                            <a href="/frontend/sale"><span>History</span></a>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+        </div>
+        <!-- END SIDEBAR MENU -->
+
     </nav>
-    <!-- The Tailwind Spinner Component -->
-    <div x-show="$store.app.isLoading" 
-     x-transition.opacity
-     class="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">    
-        <div class="flex flex-col items-center">
-            <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            
-            <span class="mt-2 text-sm font-medium text-gray-600">Fetching Data...</span>
-        </div>
-    </div>
-    <!-- <template x-if="$store.app.isLoading">
-        <div class="space-y-4">
-            <template x-for="i in 5">
-                <div class="animate-pulse flex space-x-4 p-4 border rounded-lg">
-                    <div class="rounded-full bg-gray-200 h-10 w-10"></div>
-                    <div class="flex-1 space-y-3 py-1">
-                        <div class="h-2 bg-gray-200 rounded"></div>
-                        <div class="h-2 bg-gray-200 rounded w-5/6"></div>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </template> -->
-    <!-- The Toast UI Component -->
-    <!-- <div class="fixed top-5 right-5 z-[100] flex flex-col gap-2">
-        <template x-for="toast in $store.app.toasts" :key="toast.id">
-            <div x-show="true" 
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="translate-y-10 opacity-0"
-                 x-transition:enter-end="translate-y-0 opacity-100"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-end="opacity-0 scale-90"
-                 class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3">
-                
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                
-                <span x-text="toast.message" class="text-sm font-medium"></span>
-            </div>
-        </template>
-    </div> -->
-    <!-- Update the Toast UI For Re-try button -->
-    <div class="fixed top-5 right-5 z-[100] flex flex-col gap-2">
-        <template x-for="toast in $store.app.toasts" :key="toast.id">
-            <div 
-                x-transition
-                :class="toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'"
-                class="text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-4 min-w-[320px] group relative"
-            >
-                <div class="flex items-center gap-2 flex-grow">
-                    <span x-text="toast.type === 'success' ? '✅' : '⚠️'"></span>
-                    <span x-text="toast.message" class="text-sm font-medium"></span>
-                </div>
+    <!-- END SIDEBAR PANEL -->
 
-                <div class="flex items-center gap-2">
-                    <template x-if="!!toast.action">
-                        <button 
-                            @click="toast.action(); $store.app.removeToast(toast.id)"
-                            class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-[10px] font-bold uppercase transition"
-                        >
-                            Retry
-                        </button>
-                    </template>
+    <!-- START PAGE CONTAINER -->
+    <div class="page-container">
 
-                    <button 
-                        @click="$store.app.removeToast(toast.id)"
-                        class="opacity-70 hover:opacity-100 transition-opacity p-1"
-                        aria-label="Close notification"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
+        <!-- START HEADER -->
+        <div class="header">        
+            <div class="pull-left text-center font-montserrat text-uppercase demo-fs-23 header-text-class"> 
+                XYZ Company          
+            </div>  
+            <div class="pull-right user-info" style="width:30%">
+                <div class="visible-lg visible-md m-t-10">        
+                    <div class="pull-left p-r-10 p-t-10 fs-16 font-heading" style="padding-left:40%">
+                        <h3 class="font-montserrat no-margin text-uppercase demo-fs-23"></h3>
+                        <span class="semi-bold">ABU TAHER</span>
                     </div>
-        </template>
-    </div> 
-    <div id="app-content" class="p-6" x-data x-router>
-        <div :key="$router.path" x-show="true" x-transition:enter="transition ease-out duration-700" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-            <template x-route="/" x-template>
-                <div>
-                    <h1 class="text-2xl font-bold">Welcome Home</h1>
-                    <p>This is the landing page.</p>
-                </div>
-            </template>
-            <template x-route="/posts" x-template x-handler="authGuard">
-                <div x-data="postsView" class="relative">
-                    <button 
-                        x-show="showTopButton"
-                        x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="opacity-0 translate-y-10"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-300"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 translate-y-10"
-                        @click="scrollToTop()"
-                        class="fixed bottom-8 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-50 focus:outline-none !bg-black"
-                        aria-label="Scroll to top"
-                    >
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                        </svg>
-                    </button>
-                    <h1 class="text-3xl font-bold mb-8">Latest Updates</h1>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <template x-for="post in $store.app.posts" :key="post.id">
-                            <div class="p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all">
-                                <h2 class="text-xl font-bold mb-3 capitalize text-gray-800" x-text="post.title"></h2>
-                                
-                                <p class="text-gray-600 line-clamp-2" x-text="post.body"></p>
-                                
-                                <button 
-                                    @click="$store.app.openModal(post.title, post.body)"
-                                    class="mt-4 flex items-center text-sm font-bold text-black hover:underline group"
-                                >
-                                    Read more 
-                                    <svg class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                                    </svg>
+                    <div class="dropdown pull-right">       
+                        <ul class="navbar-nav ml-auto py-4 py-md-0">
+                            <li class="subnav nav-item pl-4 pl-md-0 ml-0 ml-md-4">
+                                <button class="profile-dropdown-toggle subnav" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="thumbnail-wrapper d32 circular inline m-t-5">
+                                        <img src="/uploads/default_user_profile_images/default_images.png" alt="logo" width="32" height="32">
+                                    </span>
                                 </button>
-                            </div>
-                        </template>
+                                <ul class="navbar-nav-child dropdown-menu profile-dropdown">   
+                                    <li><a href=""><i class="pg-settings_small"></i> Settings</a></li>
+                                    <li><a href="#"><i class="pg-signals"></i> Help</a></li>
+                                    <li class="bg-master-lighter">
+                                        <span class="pull-left">
+                                            <input type="hidden" name="token" id="token" value="">
+                                            <button type="button" id="logout">Logout</button>
+                                        </span>
+                                        <span class="pull-right"><i class="pg-power"></i></span>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
-                    <div id="infinite-scroll-trigger" style="background: rgba(255,0,0,0.2); border: 2px dashed red; min-height: 50px;" class="py-10 flex justify-center border-t border-gray-100">
-                        <template x-if="$store.app.isLoading">
-                            <div class="flex items-center gap-2">
-                                <svg class="animate-spin h-5 w-5 text-blue-600" ...></svg>
-                                <span>Loading...</span>
-                            </div>
-                        </template>                        
-                        <template x-if="!canLoadMore && !$store.app.isLoading">
-                            <span class="text-gray-400">You've reached the end!</span>
-                        </template>
-                    </div>
-                    
-                    <!-- <div class="text-center py-20">
-                        <div class="text-64 text-gray-300 mb-4">📭</div>
-                        <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
-                        <p class="text-gray-500">Check back later for new updates.</p>
-                    </div> -->
                 </div>
-            </template>            
-           <template x-if="!$store.app.isLoading && $store.app.posts.length === 0">
-                <div class="text-center py-20">
-                    <div class="text-64 text-gray-300 mb-4">📭</div>
-                    <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
-                    <p class="text-gray-500">Check back later for new updates.</p>
-                </div>
-            </template> 
-            <template x-route="/about" x-template>
-                <div><h1>About Us</h1></div>
-            </template>
-            <template x-route="/contact" x-template>
-                <div x-data="contactForm">
-                    <h1 class="text-2xl font-bold mb-4">Contact Us</h1>
-                    <form @submit.prevent="submitForm()" class="space-y-4 max-w-md">
-                        <div>
-                            <label class="block text-sm font-medium">Email</label>
-                            <input type="email" x-model="formData.email" 
-                                   :class="errors.email ? 'border-red-500' : 'border-gray-300'"
-                                   class="w-full p-2 border rounded text-gray-900">
-                            <p x-show="errors.email" x-text="errors.email" class="text-red-500 text-xs mt-1"></p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium">Message</label>
-                            <textarea x-model="formData.message" class="w-full p-2 border rounded text-gray-900" rows="4"></textarea>
-                            <p x-show="errors.message" x-text="errors.message" class="text-red-500 text-xs mt-1"></p>
-                        </div>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
-                            Send Message
-                        </button>
-                    </form>
-                </div>
-            </template>
-            <template x-route="/notfound">
-               <div class="text-center p-10">
-                  <h1 class="text-4xl">404 - Not Found</h1>
-                  <a href="/" x-route:link>Go Home</a>
-               </div>
-            </template>
-        </div>
-    </div>
-    <!-- The Modal UI -->
-    <div 
-        x-show="$store.app.modal.isOpen" 
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        x-cloak
-    >
-        <div 
-            class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-0 overflow-hidden relative"
-            x-transition:enter="..." 
-            @click.away="$store.app.closeModal()"
-        >
-            <div class="p-6 border-b bg-gray-50">
-                <h2 class="text-2xl font-bold capitalize pr-8" x-text="$store.app.modal.title"></h2>
-                <button @click="$store.app.closeModal()" class="absolute top-6 right-6 text-gray-400 hover:text-black">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="p-8 max-h-[60vh] overflow-y-auto">
-                <p class="text-gray-700 leading-relaxed first-letter:text-4xl first-letter:font-bold first-letter:mr-2 first-letter:float-left" x-text="$store.app.modal.content"></p>
-            </div>
-            <div class="p-6 bg-gray-50 border-t text-right">
-                <button @click="$store.app.closeModal()" class="bg-black text-white px-6 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
-                    Close
-                </button>
             </div>
         </div>
+        <!-- END HEADER -->
+
+        <!-- START PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrapper">
+            <div class="content">
+                <div>
+                    <main id="main">
+
+                        <!-- Breadcrumb -->
+                        <section class="py-3 py-md-4 py-xl-5 bg-light">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <nav aria-label="breadcrumb">
+                                            <ol class="breadcrumb m-0 fs-7">
+                                                <li class="breadcrumb-item"><a class="link-primary text-decoration-none" href="index.html">Home</a></li>
+                                                <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                                            </ol>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Outlet selector -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                                <div class="row">              
+                                    <div class="col-9 col-md-9 col-lg-9 col-xl-9">
+                                        <div> 
+                                            <h5 class="card-title widget-card-title mb-3">Select Outlet To Generate Dashboard Report For Specific Outlet</h5>
+                                            <select class="form-control">
+                                                <option value="">Select Outlet</option>
+                                                <option value="All">All</option>                    
+                                            </select>          
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Daily / Weekly / Monthly Sales Overview -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                                <div class="row gy-3 gy-md-4">
+
+                                    <!-- Daily Sales -->
+                                    <div class="col-12 col-sm-6 col-xl-3">
+                                        <div class="card widget-card border-light shadow-sm">
+                                            <div class="card-body p-4">
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <h5 class="card-title widget-card-title mb-3">Daily Sales</h5>
+                                                        <h4 class="card-subtitle text-body-secondary m-0">XXX</h4>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-end">
+                                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-cart fs-4"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="d-flex align-items-center mt-3">
+                                                            <span class="lh-1 me-3 rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-arrow-right-short bsb-rotate-45"></i>
+                                                            </span>
+                                                            <div>
+                                                                <p class="fs-7 mb-0">XXX%</p>
+                                                                <p class="fs-7 mb-0 text-secondary">since last day</p>
+                                                            </div>                        
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="d-flex align-items-center mt-3">
+                                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-download"></i>
+                                                            </span>
+                                                            <div>
+                                                                <p class="fs-7 mb-0 text-secondary">
+                                                                    <a href="/frontend/dashboard/dailyreport" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a>
+                                                                </p>
+                                                            </div>                        
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Weekly Sales -->
+                                    <div class="col-12 col-sm-6 col-xl-3">
+                                        <div class="card widget-card border-light shadow-sm">
+                                            <div class="card-body p-4">
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <h5 class="card-title widget-card-title mb-3">Weekly Sales</h5>
+                                                        <h4 class="card-subtitle text-body-secondary m-0">XXX</h4>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-end">
+                                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-cart fs-4"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="d-flex align-items-center mt-3">
+                                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-download"></i>
+                                                            </span>
+                                                            <div>
+                                                                <p class="fs-7 mb-0 text-secondary">
+                                                                    <a href="/frontend/dashboard/weeklyreport" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a>
+                                                                </p>
+                                                            </div>                        
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Monthly Sales -->
+                                    <div class="col-12 col-sm-6 col-xl-3">
+                                        <div class="card widget-card border-light shadow-sm">
+                                            <div class="card-body p-4">
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <h5 class="card-title widget-card-title mb-3">Monthly Sales</h5>
+                                                        <h4 class="card-subtitle text-body-secondary m-0">XXX</h4>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-end">
+                                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-cart fs-4"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="d-flex align-items-center mt-3">
+                                                            <span class="lh-1 me-3 rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-arrow-right-short bsb-rotate-n45"></i>
+                                                            </span>
+                                                            <div>
+                                                                <p class="fs-7 mb-0">XXX%</p>
+                                                                <p class="fs-7 mb-0 text-secondary">since last month</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="d-flex align-items-center mt-3">
+                                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-download"></i>
+                                                            </span>
+                                                            <div>
+                                                                <p class="fs-7 mb-0 text-secondary">
+                                                                    <a href="/frontend/dashboard/monthlyreport" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a>
+                                                                </p>
+                                                            </div>                        
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sales Between -->
+                                    <div class="col-12 col-sm-6 col-xl-3">
+                                        <div class="card widget-card border-light shadow-sm">
+                                            <div class="card-body p-4">
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <h5 class="card-title widget-card-title mb-3">Sales Between</h5>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-end">
+                                                            <div class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-cart fs-4"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>                  
+                                                <div class="row" style="padding-top:10px;">
+                                                    <div class="col-md-12 m-b-10">
+                                                        <input id="from_date" class="form-control" placeholder="From Date">  
+                                                        <input id="to_date" class="form-control" placeholder="To Date">  
+                                                    </div> 
+                                                </div>   
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="d-flex align-items-center mt-3">
+                                                            <span class="lh-1 me-3 bg-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                                                <i class="bi bi-download"></i>
+                                                            </span>
+                                                            <div>
+                                                                <p class="fs-7 mb-0 text-secondary">
+                                                                    <a href="/frontend/dashboard/reportbetween" class="b-grey bold-pdf-link"><i class="text-danger">Generate Pdf</i></a>
+                                                                </p>
+                                                            </div>                        
+                                                        </div>
+                                                    </div>
+                                                </div>             
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Yearly Sales and Department Sales Overview -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                                <div class="row gy-3 gy-md-4">
+                                    <div class="col-12 col-lg-6 col-xl-7">
+                                        <div class="card widget-card border-light shadow-sm h-100">
+                                            <div class="card-body p-4">
+                                                <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                                    <div class="mb-3 mb-sm-0">
+                                                        <h5 class="card-title widget-card-title">Sales Overview</h5>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-5">
+                                                            <input id="yearly_sales_overview_year" class="form-control" placeholder="Select Year"> 
+                                                        </div>
+                                                        <div class="col-1 col-md-1">
+                                                            <button class="btn btn-success btn-cons sales-button-size product_add_btn" onclick="drawYearlyRevenueGraph()">Generate Overview</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="bsb-chart-1"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6 col-xl-5">
+                                        <div class="card widget-card border-light shadow-sm h-100">
+                                            <div class="card-body p-4">
+                                                <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                                    <div class="mb-3 mb-sm-0">
+                                                        <h5 class="card-title widget-card-title">Department Sales</h5>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-5">
+                                                            <input id="category_wise_sales_overview" class="form-control" placeholder="Select Year"> 
+                                                        </div>
+                                                        <div class="col-1 col-md-1">
+                                                            <button class="btn btn-success btn-cons sales-button-size product_add_btn" onclick="drawCategoryWiseSalesGraph()">Generate Overview</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="bsb-chart-4"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Recent Transactions -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                                <div class="row gy-3 gy-md-4">
+                                    <div class="col-12 col-lg-12 col-xl-12">
+                                        <div class="card widget-card bsb-timeline-8 border-light shadow-sm h-100">
+                                            <div class="card-body p-4">
+                                                <h5 class="card-title widget-card-title mb-3">Recent Transactions</h5>
+                                                <ul class="timeline">
+                                                    <li class="timeline-item">
+                                                        <div class="timeline-body">
+                                                            <div class="timeline-meta">
+                                                                <span>XXX</span>
+                                                            </div>
+                                                            <div class="timeline-content timeline-indicator">
+                                                                <h6 class="mb-1">Amount 2000tk received in the Payment method of Total Amount 50000Tk</h6>
+                                                                <span class="text-secondary fs-7">Sales executive: ABU</span>
+                                                            </div>
+                                                        </div>
+                                                    </li>                    
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>          
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Revenue Stats and Calendar -->
+                        <section class="pb-3 pb-md-4 pb-xl-5 bg-light">
+                            <div class="container">
+                                <div class="row gy-3 gy-md-4">            
+                                    <div class="col-12 col-lg-6 col-xl-7">
+                                        <div class="card widget-card border-light shadow-sm h-100">
+                                            <div class="card-body p-4">
+                                                <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                                    <div class="mb-3 mb-sm-0">
+                                                        <h5 class="card-title widget-card-title">Revenue Stats</h5>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-5">
+                                                            <input id="revenue_stats" class="form-control" placeholder="Select Year">  
+                                                        </div>
+                                                        <div class="col-1 col-md-1">
+                                                            <button class="btn btn-success btn-cons sales-button-size product_add_btn" onclick="drawrevenueStatsGraph()">Generate Overview</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="bsb-chart-3"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6 col-xl-5">
+                                        <div class="card widget-card border-light shadow-sm h-100">
+                                            <div class="card-body p-4">
+                                                <div id="bsb-calendar-1" class="fc fc-media-screen fc-direction-ltr fc-theme-bootstrap5 bsb-calendar-theme"></div>
+                                            </div>
+                                        </div>
+                                    </div>            
+                                </div>
+                            </div>
+                        </section>
+
+                    </main>
+                </div>
+            </div>
+            <!-- END PAGE CONTENT -->
+
+            <!-- FOOTER -->
+            <div class="container-fluid container-fixed-lg footer">
+                <div class="copyright sm-text-center">
+                    <p class="small no-margin pull-left sm-pull-reset">
+                        <span class="hint-text">Copyright © 2018 </span>
+                        <span class="font-montserrat">Logic POS</span>.
+                        <span class="hint-text">All rights reserved. </span>
+                        <span class="sm-block"><a href="#" class="m-l-10 m-r-10">Terms of use</a> | <a href="#" class="m-l-10">Privacy Policy</a></span>
+                    </p>
+                    <p class="small no-margin pull-right sm-pull-reset">
+                        <a href="#">Hand-crafted</a> <span class="hint-text">&amp; Made with Love ®</span>
+                    </p>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE CONTENT WRAPPER -->
     </div>
+    <!-- END PAGE CONTAINER -->
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

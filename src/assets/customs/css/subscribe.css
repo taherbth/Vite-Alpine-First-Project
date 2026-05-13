@@ -1,0 +1,148 @@
+ body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.pricing-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start; /* Prevents equal height enforcement */
+}
+.pricing-container-selected{
+    display: flex;
+    gap: 20px;
+    align-items: flex-start; /* Prevents equal height enforcement */
+}
+.selected-package-payment-info, .active-requested-package-payment-info{
+    margin-left: 20px;
+}
+.package-price-info{
+    padding: 20px;
+    font-size: 20px;
+    text-align: justify;
+    line-height: 30px;
+}
+.input-center{
+    text-align: center;
+}
+.standard{
+    margin-top: 35px;
+}
+.standard, .premium{
+    margin-top: 35px;
+}
+.pricing-card {
+    background: white;
+    padding: 0px 0px 20px 0px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 420px;
+    overflow: hidden;
+    position: relative;
+}
+.pricing-card-middle{
+    width: 440px;
+}
+.pricing-card .header-package {
+    padding: 20px;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+.standard .header-package {
+    background: linear-gradient(to right, #16bbf2, #e6d917);
+}
+.business .header-package {
+    background: linear-gradient(to right, #d76cf5, #8e44ad);
+}
+.premium .header-package {
+    background: linear-gradient(to right, #f26716, #e6d917);
+}
+.pricing-card .best-value{
+    background: linear-gradient(to right, #f5a26c, #ad6044);
+    font-size: 50px;
+}
+.pricing-card .selected-title{
+    background: linear-gradient(to right, #c7f56c, #2778c4);
+    font-size: 50px;
+}
+.price {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+.pricing-card ul {
+    padding: 20px;
+    list-style: none;
+    text-align: left;
+    margin: 0px 10% 0px 10%
+}
+.pricing-card ul li {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 2px solid #e9e4e4;
+    padding-top: 20px;
+/*    width: fit-content;*/
+}
+.pricing-card ul li::before {
+    content: '\2713'; /* Checkmark */
+    color: green;
+    font-size: 18px;
+    margin-right: 10px;
+}
+.pricing-card ul li.unavailable::before {
+    content: '\2717'; /* Cross */
+    color: red;
+}
+.pricing-card button {
+    background: transparent;
+    border: 2px solid;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    width: 80%;
+    margin-top: 20px;
+}
+.standard button {
+    border-color: #16bbf2;
+    color: #16bbf2;
+}
+.business button {
+    border-color: #d76cf5;
+    color: #d76cf5;
+}
+.premium button {
+    border-color: #f26716;
+    color: #f26716;
+}
+.pricing-card .header-package .straight-line{
+    padding: 13px;
+}
+.subcription_title_quantity{
+    font-size: 20px;
+    font-weight: bold;
+    color: #96be10;
+}
+.hide_pricing_container{
+    display: none;
+}
+.selected-package-containers{
+    display: block;
+}
+.successfull-package-payment-info-card{
+    background: white;
+    padding: 0px 0px 20px 0px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 600px;
+    overflow: hidden;
+    position: relative;
+}

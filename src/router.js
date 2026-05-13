@@ -4,36 +4,81 @@ export const authGuard = (context) => {
     Alpine.store('app').login();
     const isAuth = Alpine.store('app').isLoggedIn;
     
-    if (!isAuth) {
+    if (!isAuth && context.path !== '/') {
         Alpine.store('app').addToast("Access Denied: Please login first.", "error");        
         // Redirect back to home
         window.PineconeRouter.navigate('/')
         return false; // Stop the navigation
     }
+    return true; // Allow navigation
 };
 
-export const initRouter = () => {
-    // 1. Attach to window immediately so x-handler doesn't error out
-    window.authGuard = authGuard;
+// src/router.js
 
-    // 2. Wait for Alpine/Pinecone to be ready before touching settings
-    document.addEventListener('alpine:init', () => {
-        if (window.PineconeRouter) {
-            // Updated Settings
-            window.PineconeRouter.settings.hash = false;
-            window.PineconeRouter.settings.basePath = '/';
-            
-            // ADD THIS: 404 handler
-            window.PineconeRouter.settings.notfound = (context) => {
-                console.warn(`404 - Page not found: ${context.path}`);
-                // 2. Redirect to the named route 'notfound'
-                // This tells Pinecone to look for <template x-route="notfound">
-                context.route = 'notfound';
-            };
+export function initRouter__bak() {
+    // 1. Basic Settings
+    window.PineconeRouter.settings.hash = false;
+    window.PineconeRouter.settings.basePath = '/';
 
-            console.log("Router initialized with 404 handling");
-        } else {
-            console.error("Pinecone Router plugin not found!");
+    // 2. Add routes one by one using the .add() method
+    // This ensures the internal Map stays healthy
+    
+    window.PineconeRouter.add('/', {
+        handler: (context) => {
+            console.log('Home page loaded');
         }
     });
-};
+
+    window.PineconeRouter.add('/frontend/dashboard', {
+        handlers: [window.authGuard, (context) => {
+            console.log('Dashboard loaded');
+        }]
+    });
+
+    window.PineconeRouter.add('/frontend/customer', {
+        handlers: [window.authGuard, (context) => {
+            console.log('Customers loaded');
+        }]
+    });
+
+    // 3. Add the 404/Not Found handler correctly
+    window.PineconeRouter.settings.notfound = (context) => {
+        console.warn(`404: ${context.path}`);
+        context.route = 'notfound';
+    };
+}
+
+export function initRouter() {
+    window.addEventListener('alpine:init', () => {
+        // 1. Basic Settings
+        window.PineconeRouter.settings.hash = false;
+        window.PineconeRouter.settings.basePath = '/';
+
+        // 2. Add routes one by one using the .add() method
+        // This ensures the internal Map stays healthy
+        
+        window.PineconeRouter.add('/', {
+            handler: (context) => {
+                console.log('Home page loaded');
+            }
+        });
+
+        window.PineconeRouter.add('/frontend/dashboard', {
+            handlers: [window.authGuard, (context) => {
+                console.log('Dashboard loaded');
+            }]
+        });
+
+        window.PineconeRouter.add('/frontend/customer', {
+            handlers: [window.authGuard, (context) => {
+                console.log('Customers loaded');
+            }]
+        });
+
+        // 3. Add the 404/Not Found handler correctly
+        window.PineconeRouter.settings.notfound = (context) => {
+            console.warn(`404: ${context.path}`);
+            context.route = 'notfound';
+        };
+    });
+}
