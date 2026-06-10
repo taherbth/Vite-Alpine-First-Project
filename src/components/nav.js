@@ -1,43 +1,28 @@
-// ✅ nav.js — must be a function
-export default function navigation() {
+// src/components/nav.js
+import { menuTemplate } from './sidebar-nav.js';
+
+export default function navLogic() {
     return {
         openMenu: null,
-        toggle(menu) {
-            this.openMenu = this.openMenu === menu ? null : menu
+        isPinned: false,
+
+        init() {
+            const sidebarMenu = document.querySelector('.sidebar-menu');
+            if (sidebarMenu) {
+                sidebarMenu.innerHTML = menuTemplate;
+            }
         },
+
+        toggle(menu) {
+            this.openMenu = this.openMenu === menu ? null : menu;
+        },
+
         isActive(path) {
-            return window.location.pathname === path
-        }
+            return window.location.pathname === path;
+        },
+
+        togglePin() {
+            this.isPinned = !this.isPinned;
+        },
     }
 }
-
-// navigation.js
-// export default () => ({
-//     sidebarVisible: false, // Required for the layout
-//     sidebarPinned: false,  // Required for the layout
-//     openMenu: null,
-
-//     init() {
-//         if (this.isActive('/frontend/customer')) {
-//             this.openMenu = 'customers';
-//         } else if (this.isActive('/frontend/sale')) {
-//             this.openMenu = 'sales';
-//         }
-//     },
-
-//     isActive(path) {
-//         return window.location.pathname.includes(path);
-//     },
-
-//     toggle(menu) {
-//         this.openMenu = this.openMenu === menu ? null : menu;
-//     },
-    
-//     toggleSidebar() {
-//         this.sidebarVisible = !this.sidebarVisible;
-//     },
-
-//     togglePin() {
-//         this.sidebarPinned = !this.sidebarPinned;
-//     }
-// })

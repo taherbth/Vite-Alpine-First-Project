@@ -1,6 +1,5 @@
 // src/main.js
 import './css/main.css';
-
 import Alpine from 'alpinejs'
 import collapse from '@alpinejs/collapse'
 import persist from '@alpinejs/persist'
