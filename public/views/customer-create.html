@@ -1,0 +1,288 @@
+<div x-data="customerCreate" class="customer-create-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1 class="page-title">Add Customer</h1>
+            <p class="page-subtitle">Fill in the details below to add a new customer.</p>
+        </div>
+        <div class="page-header-right">
+            <a href="/frontend/customer" class="btn btn-default">
+                <i class="fa fa-arrow-left"></i> Back to Customers
+            </a>
+        </div>
+    </div>
+
+    <!-- Success State -->
+    <div x-show="submitted" x-cloak class="alert-success-box">
+        <div class="alert-icon"><i class="fa fa-check-circle"></i></div>
+        <div class="alert-body">
+            <strong>Customer added successfully!</strong>
+            <p>The customer has been saved.</p>
+        </div>
+        <div class="alert-actions">
+            <button class="btn btn-success" @click="resetForm()">Add Another</button>
+            <a href="/frontend/customer" class="btn btn-default">View All Customers</a>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div x-show="!submitted" class="form-card">
+        <form @submit.prevent="submitCustomer()">
+
+            <!-- Row 1: Name + Email -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name <span class="required">*</span></label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.name }"
+                        x-model="name"
+                        placeholder="Enter full name"
+                    >
+                    <span class="invalid-feedback" x-show="errors.name" x-text="errors.name"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address <span class="required">*</span></label>
+                    <input
+                        type="email"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.email }"
+                        x-model="email"
+                        placeholder="example@email.com"
+                    >
+                    <span class="invalid-feedback" x-show="errors.email" x-text="errors.email"></span>
+                </div>
+            </div>
+
+            <!-- Row 2: Phone + City -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Phone Number <span class="required">*</span></label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.phone }"
+                        x-model="phone"
+                        placeholder="e.g. 01711-000000"
+                    >
+                    <span class="invalid-feedback" x-show="errors.phone" x-text="errors.phone"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">City <span class="required">*</span></label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.city }"
+                        x-model="city"
+                        placeholder="e.g. Dhaka"
+                    >
+                    <span class="invalid-feedback" x-show="errors.city" x-text="errors.city"></span>
+                </div>
+            </div>
+
+            <!-- Row 3: Address + Status -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        x-model="address"
+                        placeholder="Street / Area / District"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <div class="status-toggle-group">
+                        <label class="status-option" :class="{ active: status === 'active' }">
+                            <input type="radio" x-model="status" value="active" hidden>
+                            <i class="fa fa-check-circle"></i> Active
+                        </label>
+                        <label class="status-option inactive" :class="{ active: status === 'inactive' }">
+                            <input type="radio" x-model="status" value="inactive" hidden>
+                            <i class="fa fa-times-circle"></i> Inactive
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: Notes full width -->
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label class="form-label">Notes</label>
+                    <textarea
+                        class="form-control"
+                        x-model="notes"
+                        rows="3"
+                        placeholder="Any additional notes about this customer..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button
+                    type="submit"
+                    class="btn btn-success btn-lg"
+                    :disabled="submitting"
+                >
+                    <span x-show="!submitting"><i class="fa fa-save"></i> Save Customer</span>
+                    <span x-show="submitting" x-cloak>
+                        <i class="fa fa-spinner fa-spin"></i> Saving...
+                    </span>
+                </button>
+                <button type="button" class="btn btn-default btn-lg" @click="resetForm()">
+                    <i class="fa fa-refresh"></i> Reset
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<style>
+.customer-create-page {
+    padding: 24px;
+}
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.page-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+}
+.page-subtitle {
+    color: #888;
+    margin: 0;
+    font-size: 13px;
+}
+.form-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 28px;
+    max-width: 860px;
+}
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.form-group {
+    flex: 1;
+    min-width: 200px;
+}
+.form-group.full-width {
+    flex: 0 0 100%;
+}
+.form-label {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #444;
+}
+.required {
+    color: #e74c3c;
+}
+.is-invalid {
+    border-color: #e74c3c !important;
+}
+.invalid-feedback {
+    display: block;
+    color: #e74c3c;
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* Status toggle */
+.status-toggle-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+}
+.status-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.15s;
+    user-select: none;
+}
+.status-option.active {
+    background: #eafaf1;
+    border-color: #27ae60;
+    color: #27ae60;
+}
+.status-option.inactive.active {
+    background: #fdf2f2;
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+.status-option:hover {
+    border-color: #aaa;
+}
+
+/* Success box */
+.alert-success-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #eafaf1;
+    border: 1px solid #2ecc71;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.alert-icon {
+    font-size: 32px;
+    color: #2ecc71;
+}
+.alert-body {
+    flex: 1;
+}
+.alert-body strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+.alert-body p {
+    margin: 0;
+    color: #666;
+    font-size: 13px;
+}
+.alert-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Actions */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 4px;
+}
+</style>

@@ -11,6 +11,10 @@ import navLogic from './components/nav.js'
 import { initRouter } from './router.js'
 import contactForm from './components/contactForm.js';
 import postsView from './components/postsView.js';
+import customerTable from './components/customerTable.js';
+
+import customerCreate from './components/customerCreate.js';
+
 
 // 1. Assign to window FIRST
 window.Alpine = Alpine
@@ -26,6 +30,11 @@ Alpine.data('navigation', navLogic);
 Alpine.data('contactForm', contactForm);
 Alpine.data('postsView', postsView);
 Alpine.data('appData', () =>({ features: [{title: 'Vite Powered'}]}));
+
+Alpine.data('customerTable', customerTable);
+Alpine.data('customerCreate', customerCreate);
+
+
 
 // 4. Initialize router
 initRouter()

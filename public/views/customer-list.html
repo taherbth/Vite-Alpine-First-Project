@@ -1,0 +1,333 @@
+<div x-data="customerTable" class="customer-page">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1 class="page-title">Customers</h1>
+            <p class="page-subtitle">Manage all your customers in one place.</p>
+        </div>
+        <div class="page-header-right">
+            <a href="/frontend/customer/create" class="btn btn-success">
+                <i class="fa fa-plus"></i> Add Customer
+            </a>
+        </div>
+    </div>
+
+    <!-- Toolbar: Search + Filter + Bulk Delete -->
+    <div class="table-toolbar">
+        <div class="toolbar-left">
+            <!-- Search -->
+            <div class="search-wrap">
+                <i class="fa fa-search search-icon"></i>
+                <input
+                    type="text"
+                    class="form-control search-input"
+                    placeholder="Search name, email, phone..."
+                    x-model="search"
+                    @input="onFilterChange()"
+                >
+            </div>
+
+            <!-- Status Filter -->
+            <select class="form-control filter-select" x-model="statusFilter" @change="onFilterChange()">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+
+            <!-- Per page -->
+            <select class="form-control filter-select" x-model.number="perPage" @change="onFilterChange()">
+                <option value="5">5 / page</option>
+                <option value="10">10 / page</option>
+                <option value="25">25 / page</option>
+            </select>
+        </div>
+
+        <div class="toolbar-right">
+            <!-- Bulk Delete -->
+            <button
+                class="btn btn-danger"
+                :disabled="selectedIds.length === 0"
+                @click="deleteSelected()"
+                :title="selectedIds.length ? `Delete ${selectedIds.length} selected` : 'Select rows to delete'"
+            >
+                <i class="pg-trash"></i>
+                <span x-show="selectedIds.length > 0" x-text="`Delete (${selectedIds.length})`"></span>
+                <span x-show="selectedIds.length === 0">Delete Selected</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-hover" id="customerTable">
+            <thead>
+                <tr>
+                    <th style="width:1%">
+                        <div class="checkbox">
+                            <input type="checkbox" id="check_all"
+                                :checked="allChecked"
+                                @change="toggleAll()">
+                            <label for="check_all"></label>
+                        </div>
+                    </th>
+                    <th @click="setSort('name')" class="sortable">
+                        Name <i class="fa" :class="sortIcon('name')"></i>
+                    </th>
+                    <th @click="setSort('email')" class="sortable">
+                        Email <i class="fa" :class="sortIcon('email')"></i>
+                    </th>
+                    <th @click="setSort('phone')" class="sortable">
+                        Phone <i class="fa" :class="sortIcon('phone')"></i>
+                    </th>
+                    <th @click="setSort('address')" class="sortable">
+                        Address <i class="fa" :class="sortIcon('address')"></i>
+                    </th>
+                    <th @click="setSort('totalSales')" class="sortable">
+                        Total Sales <i class="fa" :class="sortIcon('totalSales')"></i>
+                    </th>
+                    <th @click="setSort('createdDate')" class="sortable">
+                        Created <i class="fa" :class="sortIcon('createdDate')"></i>
+                    </th>
+                    <th @click="setSort('status')" class="sortable">
+                        Status <i class="fa" :class="sortIcon('status')"></i>
+                    </th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <!-- Empty state -->
+                <tr x-show="paginated.length === 0">
+                    <td colspan="9" class="empty-state">
+                        <i class="fa fa-inbox fa-2x"></i>
+                        <p>No customers found.</p>
+                    </td>
+                </tr>
+
+                <!-- Rows -->
+                <template x-for="customer in paginated" :key="customer.id">
+                    <tr :class="{ 'row-selected': selectedIds.includes(customer.id) }">
+                        <td class="v-align-middle">
+                            <div class="checkbox">
+                                <input
+                                    type="checkbox"
+                                    :id="`chk_${customer.id}`"
+                                    :checked="selectedIds.includes(customer.id)"
+                                    @change="toggleOne(customer.id)"
+                                >
+                                <label :for="`chk_${customer.id}`"></label>
+                            </div>
+                        </td>
+                        <td class="v-align-middle" x-text="customer.name"></td>
+                        <td class="v-align-middle" x-text="customer.email"></td>
+                        <td class="v-align-middle" x-text="customer.phone"></td>
+                        <td class="v-align-middle" x-text="customer.address"></td>
+                        <td class="v-align-middle text-center" x-text="customer.totalSales"></td>
+                        <td class="v-align-middle" x-text="formatDate(customer.createdDate)"></td>
+                        <td class="v-align-middle">
+                            <span
+                                class="status-badge"
+                                :class="customer.status === 'active' ? 'badge-active' : 'badge-inactive'"
+                                x-text="customer.status"
+                            ></span>
+                        </td>
+                        <td class="v-align-middle">
+                            <div class="btn-group btn-actions">
+                                <a
+                                    title="Edit"
+                                    class="btn btn-sm edit-button"
+                                    :href="`/frontend/customer/${customer.id}/edit`"
+                                >
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                <button
+                                    title="Delete"
+                                    type="button"
+                                    class="btn btn-sm btn-danger"
+                                    @click="deleteOne(customer.id)"
+                                >
+                                    <i class="fa fa-trash-o"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="pagination-footer">
+        <div class="pagination-info">
+            Showing <strong x-text="fromRecord"></strong>–<strong x-text="toRecord"></strong>
+            of <strong x-text="filtered.length"></strong> customers
+        </div>
+
+        <div class="pagination-controls">
+            <!-- Prev -->
+            <button class="btn btn-sm btn-default"
+                :disabled="currentPage === 1"
+                @click="goToPage(currentPage - 1)">
+                <i class="fa fa-chevron-left"></i>
+            </button>
+
+            <!-- Page numbers -->
+            <template x-for="page in pageNumbers" :key="page">
+                <button
+                    class="btn btn-sm"
+                    :class="page === currentPage ? 'btn-primary' : 'btn-default'"
+                    @click="goToPage(page)"
+                    x-text="page"
+                ></button>
+            </template>
+
+            <!-- Next -->
+            <button class="btn btn-sm btn-default"
+                :disabled="currentPage === totalPages"
+                @click="goToPage(currentPage + 1)">
+                <i class="fa fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.customer-page {
+    padding: 24px;
+}
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.page-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+}
+.page-subtitle {
+    color: #888;
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Toolbar */
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.search-wrap {
+    position: relative;
+}
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 13px;
+}
+.search-input {
+    padding-left: 30px !important;
+    width: 220px;
+}
+.filter-select {
+    width: auto;
+    min-width: 110px;
+}
+
+/* Table */
+.table thead th {
+    background: #f8f9fa;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #555;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+}
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+.sortable:hover {
+    background: #f0f0f0;
+}
+.sortable .fa {
+    margin-left: 4px;
+    color: #aaa;
+    font-size: 11px;
+}
+.row-selected {
+    background-color: #f0f7ff !important;
+}
+.empty-state {
+    text-align: center;
+    padding: 40px !important;
+    color: #aaa;
+}
+.empty-state i {
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Status badge */
+.status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+.badge-active {
+    background: #eafaf1;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+.badge-inactive {
+    background: #fdf2f2;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}
+
+/* Pagination */
+.pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.pagination-info {
+    font-size: 13px;
+    color: #666;
+}
+.pagination-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.btn-actions .btn {
+    padding: 3px 8px;
+    font-size: 12px;
+}
+</style>
