@@ -75,7 +75,7 @@ export function initRouter() {
             }]
         });
 
-        window.PineconeRouter.add('/frontend/customer/create', {
+        window.PineconeRouter.add('/customer/create', {
             handlers: [authGuard, (context) => {
                 nav().loadView('/views/customer-create.html');
             }]
