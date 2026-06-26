@@ -22,9 +22,8 @@
        The body is now the single Alpine root for the whole page. -->
   <body x-data="navigation"
         class="fixed-header"
-        :class="{
-          'sidebar-open':   sidebarVisible,
-          'sidebar-pinned': sidebarPinned
+        :class="{          
+          'sidebar-collapsed': sidebarCollapsed
         }">
 
     <!-- BEGIN SIDEBAR PANEL -->
@@ -60,13 +59,7 @@
 
         <!-- BEGIN SIDEBAR MENU HEADER -->
         <div class="sidebar-header">
-            <img src="/images/logo_white.png" alt="logo" class="brand" width="78" height="22">
-            <div class="sidebar-header-controls">
-                <!-- FIX 3: pin button now calls Alpine togglePin() instead of data-toggle-pin -->
-                <button type="button" class="btn btn-link visible-lg-inline" @click="togglePin()">
-                    <i class="fa fs-12"></i>
-                </button>
-            </div>
+            <img src="/images/logo_white.png" alt="logo" class="brand" width="78" height="22">            
         </div>
         <!-- END SIDEBAR MENU HEADER -->
 
@@ -83,13 +76,33 @@
     <!-- END SIDEBAR PANEL -->
 
     <!-- START PAGE CONTAINER -->
-    <div class="page-container">
-
+    <div class="page-container" style="padding-left:0px">
         <!-- START HEADER -->
-        <div class="header">        
-            <div class="pull-left text-center font-montserrat text-uppercase demo-fs-23 header-text-class"> 
+        <div class="header" style="position: relative;">        
+            
+            <button @click="toggleSidebar()" 
+                    type="button"
+                    class="btn-sidebar-toggle"
+                    style="position: absolute !important;
+                           left: 20px !important;
+                           top: 50% !important;
+                           transform: translateY(-50%) !important;
+                           display: inline-block !important; 
+                           visibility: visible !important; 
+                           background: transparent; 
+                           border: none; 
+                           cursor: pointer; 
+                           padding: 5px; 
+                           z-index: 9999; 
+                           color: #333; /* Dark color so it stands out on the white header background */
+                           line-height: 1;">
+                <i class="bi bi-list" style="font-size: 2rem !important; display: inline-block !important;"></i>
+            </button>
+
+            <div class="pull-left text-center font-montserrat text-uppercase demo-fs-23 header-text-class" 
+                 style="padding-left: 45px !important;"> 
                 XYZ Company          
-            </div>  
+            </div>
             <div class="pull-right user-info" style="width:30%">
                 <div class="visible-lg visible-md m-t-10">        
                     <div class="pull-left p-r-10 p-t-10 fs-16 font-heading" style="padding-left:40%">

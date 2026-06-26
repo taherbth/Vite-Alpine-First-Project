@@ -7,22 +7,48 @@
 @import "apex-chart.css";
 
 
+/* Prevent horizontal scrolling across the entire page */
+html, 
+body {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  position: relative;
+}
+
+/* Ensure the page container handles its width correctly during transitions */
+.page-container {
+  width: 80% !important;
+  max-width: 80% !important;
+  box-sizing: border-box !important;
+}
+
 /* ============================================
-   SIDEBAR FIXES — add to bottom of main.css
+   SIDEBAR TOGGLE FIXES (Gemini-style)
    ============================================ */
 
-/* Always show sidebar fully expanded (no collapse by default) */
+/* Base transitions for smooth sliding */
 .page-sidebar {
   left: 0 !important;
   width: 280px !important;
+  transition: transform 0.3s ease-in-out !important;
+  z-index: 1000;
 }
 
-/* Push page content to the right of the sidebar */
 .page-container {
   margin-left: 280px !important;
+  transition: margin-left 0.3s ease-in-out !important;
 }
 
-/* Sidebar menu text — force visible */
+/* When sidebar is collapsed */
+body.sidebar-collapsed .page-sidebar {
+  transform: translateX(-280px) !important; /* Slide completely out of view */
+}
+
+body.sidebar-collapsed .page-container {
+  margin-left: 0px !important; /* Content takes up full width */
+}
+
+/* Sidebar menu text configurations */
 .page-sidebar .sidebar-menu .menu-items > li > a .title {
   display: inline !important;
   visibility: visible !important;
@@ -30,7 +56,7 @@
   white-space: nowrap;
 }
 
-/* Sub-menu: hidden by default, shown when parent li has .open */
+/* Sub-menu behavior */
 html body .page-sidebar .sidebar-menu .menu-items > li ul.sub-menu {
   display: none !important;
 }
@@ -38,10 +64,23 @@ html body .page-sidebar .sidebar-menu .menu-items > li.open > ul.sub-menu {
   display: block !important;
 }
 
-/* Optional: sidebar toggle hides it on mobile */
-body.sidebar-open .page-sidebar {
-  transform: translate3d(0, 0, 0) !important;
+/* The container wrapping your form card */
+.form-container-wrapper {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center;     /* Centers vertically */
+    /* Fills available height minus header/footer */
+    width: 100%;
+    box-sizing: border-box;
 }
-body:not(.sidebar-open) .page-sidebar {
-  left: 0 !important; /* keep open on desktop */
+
+.form-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 28px;
+    width: 100%;             /* Ensures responsiveness */
+    max-width: 860px;
+    /* Note: 'content' isn't a valid CSS property for backgrounds. 
+       If you want an oldlace background color, use background-color: oldlace; */
 }

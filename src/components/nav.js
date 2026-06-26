@@ -6,6 +6,7 @@ export default function navLogic() {
         openMenu: null,
         isPinned: false,
         currentView: '',           // 👈 holds the rendered HTML
+        sidebarCollapsed: false, // 👈 Track collapsed state
 
         init() {
             // Inject sidebar
@@ -34,5 +35,9 @@ export default function navLogic() {
         togglePin() {
             this.isPinned = !this.isPinned;
         },
+        // 👈 Add toggle helper
+        toggleSidebar() {
+            this.sidebarCollapsed = !this.sidebarCollapsed;
+        }
     }
 }

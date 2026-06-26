@@ -24,124 +24,127 @@
             <a href="/customer" class="btn btn-default">View All Customers</a>
         </div>
     </div>
+    <main id="main">
+        <div class="form-container-wrapper">
+            <!-- Form -->
+            <div x-show="!submitted" class="form-card">
+                <form @submit.prevent="submitCustomer()">
 
-    <!-- Form -->
-    <div x-show="!submitted" class="form-card">
-        <form @submit.prevent="submitCustomer()">
+                    <!-- Row 1: Name + Email -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                :class="{ 'is-invalid': errors.name }"
+                                x-model="name"
+                                placeholder="Enter full name"
+                            >
+                            <span class="invalid-feedback" x-show="errors.name" x-text="errors.name"></span>
+                        </div>
 
-            <!-- Row 1: Name + Email -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Full Name <span class="required">*</span></label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        :class="{ 'is-invalid': errors.name }"
-                        x-model="name"
-                        placeholder="Enter full name"
-                    >
-                    <span class="invalid-feedback" x-show="errors.name" x-text="errors.name"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Email Address <span class="required">*</span></label>
-                    <input
-                        type="email"
-                        class="form-control"
-                        :class="{ 'is-invalid': errors.email }"
-                        x-model="email"
-                        placeholder="example@email.com"
-                    >
-                    <span class="invalid-feedback" x-show="errors.email" x-text="errors.email"></span>
-                </div>
-            </div>
-
-            <!-- Row 2: Phone + City -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Phone Number <span class="required">*</span></label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        :class="{ 'is-invalid': errors.phone }"
-                        x-model="phone"
-                        placeholder="e.g. 01711-000000"
-                    >
-                    <span class="invalid-feedback" x-show="errors.phone" x-text="errors.phone"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">City <span class="required">*</span></label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        :class="{ 'is-invalid': errors.city }"
-                        x-model="city"
-                        placeholder="e.g. Dhaka"
-                    >
-                    <span class="invalid-feedback" x-show="errors.city" x-text="errors.city"></span>
-                </div>
-            </div>
-
-            <!-- Row 3: Address + Status -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Address</label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        x-model="address"
-                        placeholder="Street / Area / District"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <div class="status-toggle-group">
-                        <label class="status-option" :class="{ active: status === 'active' }">
-                            <input type="radio" x-model="status" value="active" hidden>
-                            <i class="fa fa-check-circle"></i> Active
-                        </label>
-                        <label class="status-option inactive" :class="{ active: status === 'inactive' }">
-                            <input type="radio" x-model="status" value="inactive" hidden>
-                            <i class="fa fa-times-circle"></i> Inactive
-                        </label>
+                        <div class="form-group">
+                            <label class="form-label">Email Address <span class="required">*</span></label>
+                            <input
+                                type="email"
+                                class="form-control"
+                                :class="{ 'is-invalid': errors.email }"
+                                x-model="email"
+                                placeholder="example@email.com"
+                            >
+                            <span class="invalid-feedback" x-show="errors.email" x-text="errors.email"></span>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Row 4: Notes full width -->
-            <div class="form-row">
-                <div class="form-group full-width">
-                    <label class="form-label">Notes</label>
-                    <textarea
-                        class="form-control"
-                        x-model="notes"
-                        rows="3"
-                        placeholder="Any additional notes about this customer..."
-                    ></textarea>
-                </div>
-            </div>
+                    <!-- Row 2: Phone + City -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Phone Number <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                :class="{ 'is-invalid': errors.phone }"
+                                x-model="phone"
+                                placeholder="e.g. 01711-000000"
+                            >
+                            <span class="invalid-feedback" x-show="errors.phone" x-text="errors.phone"></span>
+                        </div>
 
-            <!-- Actions -->
-            <div class="form-actions">
-                <button
-                    type="submit"
-                    class="btn btn-success btn-lg"
-                    :disabled="submitting"
-                >
-                    <span x-show="!submitting"><i class="fa fa-save"></i> Save Customer</span>
-                    <span x-show="submitting" x-cloak>
-                        <i class="fa fa-spinner fa-spin"></i> Saving...
-                    </span>
-                </button>
-                <button type="button" class="btn btn-default btn-lg" @click="resetForm()">
-                    <i class="fa fa-refresh"></i> Reset
-                </button>
-            </div>
+                        <div class="form-group">
+                            <label class="form-label">City <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                :class="{ 'is-invalid': errors.city }"
+                                x-model="city"
+                                placeholder="e.g. Dhaka"
+                            >
+                            <span class="invalid-feedback" x-show="errors.city" x-text="errors.city"></span>
+                        </div>
+                    </div>
 
-        </form>
-    </div>
+                    <!-- Row 3: Address + Status -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                x-model="address"
+                                placeholder="Street / Area / District"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <div class="status-toggle-group">
+                                <label class="status-option" :class="{ active: status === 'active' }">
+                                    <input type="radio" x-model="status" value="active" hidden>
+                                    <i class="fa fa-check-circle"></i> Active
+                                </label>
+                                <label class="status-option inactive" :class="{ active: status === 'inactive' }">
+                                    <input type="radio" x-model="status" value="inactive" hidden>
+                                    <i class="fa fa-times-circle"></i> Inactive
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Notes full width -->
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label class="form-label">Notes</label>
+                            <textarea
+                                class="form-control"
+                                x-model="notes"
+                                rows="3"
+                                placeholder="Any additional notes about this customer..."
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-actions">
+                        <button
+                            type="submit"
+                            class="btn btn-success btn-lg"
+                            :disabled="submitting"
+                        >
+                            <span x-show="!submitting"><i class="fa fa-save"></i> Save Customer</span>
+                            <span x-show="submitting" x-cloak>
+                                <i class="fa fa-spinner fa-spin"></i> Saving...
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-default btn-lg" @click="resetForm()">
+                            <i class="fa fa-refresh"></i> Reset
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </main>
 
 </div>
 
@@ -169,13 +172,7 @@
     margin: 0;
     font-size: 13px;
 }
-.form-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 28px;
-    max-width: 860px;
-}
+
 .form-row {
     display: flex;
     gap: 20px;
