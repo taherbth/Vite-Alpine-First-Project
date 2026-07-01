@@ -1,6 +1,5 @@
 // src/main.js
 import './css/main.css';
-
 import Alpine from 'alpinejs'
 import collapse from '@alpinejs/collapse'
 import persist from '@alpinejs/persist'
@@ -33,7 +32,6 @@ Alpine.data('appData', () =>({ features: [{title: 'Vite Powered'}]}));
 
 Alpine.data('customerTable', customerTable);
 Alpine.data('customerCreate', customerCreate);
-
 
 
 // 4. Initialize router

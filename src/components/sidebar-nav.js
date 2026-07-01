@@ -19,8 +19,8 @@ export const menuTemplate = `
             <!-- FIX 5: No x-cloak, no x-bind:class on the ul.
                  CSS rule: li.open > ul.sub-menu { display: block } handles visibility. -->
             <ul class="sub-menu">
-                <li :class="{ 'active': isActive('/customer') }">
-                    <a href="/customer"><span>All Customers</span></a>
+                <li :class="{ 'active': isActive('/customers') }">
+                    <a href="/customers"><span>All Customers</span></a>
                 </li>
             </ul>
         </li>
