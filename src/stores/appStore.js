@@ -3,8 +3,15 @@ export default (Alpine) => ({
     // We use Alpine.$persist() to wrap the initial value.
     // Alpine will now automatically sync 'theme' with localStorage['_x_theme'] 
     theme: Alpine.$persist('light').as('app-theme'),
-    isLoggedIn: Alpine.$persist(false), // Persist so they stay logged in on refresh
-    // theme: "light",
+    // isLoggedIn: Alpine.$persist(false),
+    isLoggedIn: Alpine.$persist(false).as('app-logged-in'), 
+    token: Alpine.$persist(null).as('app-token'), // Store JWT/Sanctum token
+    user: Alpine.$persist({ name: 'Guest' }).as('app-user'),
+
+    apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+    toasts: [],
+    isLoading: false,
+
     posts: [],
     isLoading: false,
     modal: {
@@ -30,18 +37,77 @@ export default (Alpine) => ({
             console.log('Navigated to:', window.location.pathname);
         });
     }, 
+    async apiRequest(endpoint, data) {
+        this.isLoading = true;
+        try {
+            const response = await fetch(`${this.apiUrl}/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
 
-    login() {
-        this.isLoggedIn = true;
-        this.user.name = 'John Doe';
-        this.addToast("Signed in!", "success");
+            const result = await response.json();
+
+            if (!response.ok) {
+                // Laravel validation errors validation structure handles arrays or explicit messages
+                const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
+                throw new Error(errorMsg);
+            }
+            return result;
+        } catch (error) {
+            this.addToast(error.message, "error");
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    },
+    async handleLogin(credentials) {
+        try {
+            const data = await this.apiRequest('login', credentials);
+            this.token = data.token; // Adapt based on your exact Laravel response structure
+            this.user = data.user || { name: credentials.email };
+            this.isLoggedIn = true;
+            this.addToast("Welcome back!", "success");
+            window.PineconeRouter.navigate('/dashboard');
+        } catch (e) {
+            // Error managed by apiRequest
+        }
+    },
+    async handleRegister(formFields) {
+        try {
+            const data = await this.apiRequest('register', formFields);
+            this.token = data.token;
+            this.user = data.user || { name: formFields.name };
+            this.isLoggedIn = true;
+            this.addToast("Account created successfully!", "success");
+            window.PineconeRouter.navigate('/dashboard');
+        } catch (e) {
+            // Error managed by apiRequest
+        }
     },
     
     logout() {
         this.isLoggedIn = false;
-        this.user.name = 'Guest';
-        window.PineconeRouter.navigate('/'); // Redirect to home
+        this.token = null;
+        this.user = { name: 'Guest' };
+        this.addToast("Logged out successfully.", "success");
+        window.PineconeRouter.navigate('/');
     },
+
+    // login() {
+    //     this.isLoggedIn = true;
+    //     this.user.name = 'John Doe';
+    //     this.addToast("Signed in!", "success");
+    // },
+    
+    // logout() {
+    //     this.isLoggedIn = false;
+    //     this.user.name = 'Guest';
+    //     window.PineconeRouter.navigate('/'); // Redirect to home
+    // },
     
     toasts: [], // Array to hold active notifications
     

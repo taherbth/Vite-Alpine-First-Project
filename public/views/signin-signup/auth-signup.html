@@ -1,0 +1,33 @@
+<div class="flex min-h-screen items-center justify-center bg-gray-100 px-4 dark:bg-gray-900" x-data="{ name: '', email: '', password: '', password_confirmation: '' }">
+    <div class="w-full max-w-md space-y-6 rounded-lg bg-white p-8 shadow-md dark:bg-gray-800">
+        <h2 class="text-center text-3xl font-bold font-montserrat text-gray-900 dark:text-white">Create Account</h2>
+        <form @submit.prevent="
+            if (password !== password_confirmation) { $store.app.addToast('Passwords do not match'); return; }
+            $store.app.handleRegister({ name, email, password, password_confirmation })" 
+            class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                <input type="text" x-model="name" required class="mt-1 block w-full rounded border p-2 text-black" placeholder="John Doe">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
+                <input type="email" x-model="email" required class="mt-1 block w-full rounded border p-2 text-black" placeholder="you@company.com">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <input type="password" x-model="password" required class="mt-1 block w-full rounded border p-2 text-black" placeholder="••••••••">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+                <input type="password" x-model="password_confirmation" required class="mt-1 block w-full rounded border p-2 text-black" placeholder="••••••••">
+            </div>
+            <button type="submit" :disabled="$store.app.isLoading" class="w-full rounded bg-green-600 py-2 font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                <span x-show="!$store.app.isLoading">Sign Up</span>
+                <span x-show="$store.app.isLoading">Creating Account...</span>
+            </button>
+        </form>
+        <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+            Already registered? <a href="/" class="text-blue-600 hover:underline">Log in instead</a>
+        </p>
+    </div>
+</div>

@@ -24,9 +24,15 @@ export function initRouter() {
                        ?? document.body);
 
         window.PineconeRouter.add('/', {
-            handler: (context) => {
-                nav().loadView('/views/dashboard.html');
-            }
+            handlers: [authGuard, (context) => {
+                nav().loadView('/views/signin-signup/auth-login.html');
+            }]
+        });
+
+        window.PineconeRouter.add('/signup', {
+            handlers: [authGuard, (context) => {
+                nav().loadView('/views/signin-signup/auth-signup.html');
+            }]
         });
 
         window.PineconeRouter.add('/dashboard', {
