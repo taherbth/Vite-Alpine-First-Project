@@ -11,7 +11,6 @@ import { initRouter } from './router.js'
 import contactForm from './components/contactForm.js';
 import postsView from './components/postsView.js';
 import customerTable from './components/customerTable.js';
-
 import customerCreate from './components/customerCreate.js';
 
 

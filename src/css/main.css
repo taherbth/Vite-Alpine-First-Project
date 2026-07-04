@@ -84,3 +84,6 @@ html body .page-sidebar .sidebar-menu .menu-items > li.open > ul.sub-menu {
     /* Note: 'content' isn't a valid CSS property for backgrounds. 
        If you want an oldlace background color, use background-color: oldlace; */
 }
+.min-h-screen{
+  min-height: 50vh !important;
+}

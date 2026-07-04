@@ -19,8 +19,7 @@ export default (Alpine) => ({
         title: '',
         content: ''
     },
-
-     // This runs automatically when Alpine.store('app', ...) is called
+    // This runs automatically when Alpine.store('app', ...) is called
     async init() {
         Alpine.effect(async () => {
             const currentTheme = this.theme;
@@ -33,9 +32,30 @@ export default (Alpine) => ({
         // await this.fetchPosts();
         // Listen for route changes
         window.addEventListener('route-changed', () => {
-            this.toasts = []; // Clear errors when switching pages
+            this.toasts = this.toasts.filter(t => t.type !== 'error');
             console.log('Navigated to:', window.location.pathname);
         });
+    },
+    async apiGet(endpoint) {
+        this.isLoading = true; // Use global loader indicator
+        try {
+            const response = await fetch(`${this.apiUrl}/${endpoint}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    // Natively attaches your global auth token if logged in[cite: 3]
+                    'Authorization': this.token ? `Bearer ${this.token}` : '' 
+                }
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Failed to fetch resource.');
+            return result;
+        } catch (error) {
+            this.addToast(error.message, "error"); 
+            throw error;
+        } finally {
+            this.isLoading = false; 
+        }
     }, 
     async apiRequest(endpoint, data) {
         this.isLoading = true;
@@ -87,8 +107,7 @@ export default (Alpine) => ({
         } catch (e) {
             // Error managed by apiRequest
         }
-    },
-    
+    },    
     logout() {
         this.isLoggedIn = false;
         this.token = null;
@@ -108,9 +127,6 @@ export default (Alpine) => ({
     //     this.user.name = 'Guest';
     //     window.PineconeRouter.navigate('/'); // Redirect to home
     // },
-    
-    toasts: [], // Array to hold active notifications
-    
     apiUrl: import.meta.env.VITE_API_URL,
 
     // addToast(message, type = 'error') {
@@ -181,11 +197,7 @@ export default (Alpine) => ({
         } finally {
             this.isLoading = false;
         }
-    },    
-    user: {
-        name: 'Taher',
-        isLoggedIn: true
-    },
+    },  
     // Centralized Asset Management in Store
     assets: {
         logo: './vit.svg',

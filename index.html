@@ -13,6 +13,8 @@
     </script>     
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Select2 CSS Layout Stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"> 
     <title>Vite + Tailwind + Alpine</title>
@@ -25,6 +27,14 @@
         :class="{          
           'sidebar-collapsed': sidebarCollapsed
         }">
+
+    <div class="fixed bottom-4 right-4 z-50 space-y-2">
+        <template x-for="toast in $store.app.toasts" :key="toast.id">
+            <div :class="toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'" class="text-white p-4 rounded shadow-lg">
+                <span x-text="toast.message"></span>
+            </div>
+        </template>
+    </div>
 
     <!-- BEGIN SIDEBAR PANEL -->
     <!-- FIX 2: .page-sidebar stays as-is (pages.css targets this class).
@@ -122,7 +132,7 @@
                                     <li class="bg-master-lighter">
                                         <span class="pull-left">
                                             <input type="hidden" name="token" id="token" value="">
-                                            <button type="button" id="logout">Logout</button>
+                                            <button @click="$store.app.logout()" type="button" id="logout">Logout</button>
                                         </span>
                                         <span class="pull-right"><i class="pg-power"></i></span>
                                     </li>
@@ -165,7 +175,12 @@
         <!-- END PAGE CONTENT WRAPPER -->
     </div>
     <!-- END PAGE CONTAINER -->
+    <!-- 1. Include jQuery Core Dependency first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
+    <!-- 2. Include Select2 Utility Component Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

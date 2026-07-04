@@ -24,106 +24,172 @@
             <a href="/customer" class="btn btn-default">View All Customers</a>
         </div>
     </div>
-    <main id="main">
-        <div class="form-container-wrapper">
-            <!-- Form -->
-            <div x-show="!submitted" class="form-card">
-                <form @submit.prevent="submitCustomer()">
+    <!-- <main id="main"> -->
+        <div class="row row-same-height ">     
+            <form @submit.prevent="submitCustomer()">    
+                <!-- Form -->
+                <div x-show="!submitted" >                
+                    <div class="row">
+                        <!-- First Column -->
+                        <div class="col-md-6 ">
+                            <div class="padding-30">
+                                <div class="form-group-attached">
+                                    <!-- Customer No -->
+                                    <div class="form-group form-group-default required" :class="errors.customer_no ? 'has-error' : ''">
+                                        <label for="customer_no">Customer No</label>
+                                        <input x-model="customer_data.customer_no" class="form-control" placeholder="Customer No">
+                                        <template x-if="errors.customer_no">
+                                            <span class="form-error text-danger" x-text="errors.customer_no"></span>
+                                        </template>
+                                    </div>
 
-                    <!-- Row 1: Name + Email -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Full Name <span class="required">*</span></label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="{ 'is-invalid': errors.name }"
-                                x-model="name"
-                                placeholder="Enter full name"
-                            >
-                            <span class="invalid-feedback" x-show="errors.name" x-text="errors.name"></span>
+                                    <!-- First Name -->
+                                    <div class="form-group form-group-default required" :class="errors.first_name ? 'has-error' : ''">
+                                        <label for="first_name">First Name</label>
+                                        <input x-model="customer_data.first_name" class="form-control" placeholder="First name">
+                                        <template x-if="errors.first_name">
+                                            <span class="form-error text-danger" x-text="errors.first_name"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Last Name (Fixed Vue bug where class pointed to first_name errors) -->
+                                    <div class="form-group form-group-default required" :class="errors.last_name ? 'has-error' : ''">
+                                        <label for="last_name">Last Name</label>
+                                        <input x-model="customer_data.last_name" class="form-control" placeholder="Last name">
+                                        <template x-if="errors.last_name">
+                                            <span class="form-error text-danger" x-text="errors.last_name"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Gender -->
+                                    <div class="form-group form-group-default required" :class="errors.gender_id ? 'has-error' : ''">
+                                        <label for="gender">Gender</label>
+                                        <select x-model="customer_data.gender_id" class="cs-select cs-skin-slide cs-transparent form-control">
+                                            <option value="">Select Gender</option>
+                                            <template x-for="gender in gender_lists" :key="gender.id">
+                                                <option :value="gender.id" x-text="gender.name"></option>
+                                            </template>
+                                        </select>
+                                        <template x-if="errors.gender_id">
+                                            <span class="form-error text-danger" x-text="errors.gender_id"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Mobile No -->
+                                    <div class="form-group form-group-default" :class="errors.cell_phone ? 'has-error' : ''">
+                                        <label for="cell_phone">Mobile No</label>
+                                        <input x-model="customer_data.cell_phone" class="form-control" placeholder="Cell phone">
+                                        <template x-if="errors.cell_phone">
+                                            <span class="form-error text-danger" x-text="errors.cell_phone"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Work Phone -->
+                                    <div class="form-group form-group-default">
+                                        <label for="work_phone">Work phone</label>
+                                        <input x-model="customer_data.work_phone" class="form-control" placeholder="Work phone">
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="form-group form-group-default" :class="errors.email ? 'has-error' : ''">
+                                        <label for="email">Email</label>
+                                        <input x-model="customer_data.email" class="form-control" placeholder="Email">
+                                        <template x-if="errors.email">
+                                            <span class="form-error text-danger" x-text="errors.email"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Date of Birth (Alpine relies on .lazy modifier via x-model.lazy) -->
+                                    <div class="form-group form-group-default">
+                                        <label for="date_of_birth">Date of birth</label>
+                                        <input x-model.lazy="customer_data.date_of_birth" id="date_of_birth" class="form-control" placeholder="Select Date">
+                                    </div>
+
+                                </div>
+                                <br>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Email Address <span class="required">*</span></label>
-                            <input
-                                type="email"
-                                class="form-control"
-                                :class="{ 'is-invalid': errors.email }"
-                                x-model="email"
-                                placeholder="example@email.com"
-                            >
-                            <span class="invalid-feedback" x-show="errors.email" x-text="errors.email"></span>
-                        </div>
-                    </div>
+                        <!-- Second Column -->
+                        <div class="col-md-6 ">
+                            <div class="padding-30">
+                                <div class="form-group-attached">
+                                    <!-- Address -->
+                                    <div class="form-group form-group-default required" :class="errors.address ? 'has-error' : ''">
+                                        <label for="address">Address</label>
+                                        <input x-model="customer_data.address" class="form-control" placeholder="Address">
+                                        <template x-if="errors.address">
+                                            <span class="form-error text-danger" x-text="errors.address"></span>
+                                        </template>
+                                    </div>
 
-                    <!-- Row 2: Phone + City -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Phone Number <span class="required">*</span></label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="{ 'is-invalid': errors.phone }"
-                                x-model="phone"
-                                placeholder="e.g. 01711-000000"
-                            >
-                            <span class="invalid-feedback" x-show="errors.phone" x-text="errors.phone"></span>
-                        </div>
+                                    <!-- Address 2 -->
+                                    <div class="form-group form-group-default">
+                                        <label for="address2">Address2</label>
+                                        <input x-model="customer_data.address2" class="form-control" placeholder="Address2">
+                                    </div>
 
-                        <div class="form-group">
-                            <label class="form-label">City <span class="required">*</span></label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="{ 'is-invalid': errors.city }"
-                                x-model="city"
-                                placeholder="e.g. Dhaka"
-                            >
-                            <span class="invalid-feedback" x-show="errors.city" x-text="errors.city"></span>
-                        </div>
-                    </div>
+                                    <!-- City -->
+                                    <div class="form-group form-group-default required" :class="errors.city ? 'has-error' : ''">
+                                        <label for="city">City</label>
+                                        <input x-model="customer_data.city" class="form-control" placeholder="City">
+                                        <template x-if="errors.city">
+                                            <span class="form-error text-danger" x-text="errors.city"></span>
+                                        </template>
+                                    </div>
 
-                    <!-- Row 3: Address + Status -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Address</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                x-model="address"
-                                placeholder="Street / Area / District"
-                            >
-                        </div>
+                                    <!-- Zip -->
+                                    <div class="form-group form-group-default">
+                                        <label for="zip">Zip</label>
+                                        <input x-model="customer_data.zip" class="form-control" placeholder="Zip">
+                                    </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Status</label>
-                            <div class="status-toggle-group">
-                                <label class="status-option" :class="{ active: status === 'active' }">
-                                    <input type="radio" x-model="status" value="active" hidden>
-                                    <i class="fa fa-check-circle"></i> Active
-                                </label>
-                                <label class="status-option inactive" :class="{ active: status === 'inactive' }">
-                                    <input type="radio" x-model="status" value="inactive" hidden>
-                                    <i class="fa fa-times-circle"></i> Inactive
-                                </label>
+                                    <!-- Country -->
+                                     <!-- Country Dropdown with Search capability -->
+                                        <div class="form-group form-group-default required" :class="errors.country_id ? 'has-error' : ''">
+                                            <label for="country_id">Country</label>
+                                            
+                                            <select 
+                                                id="country_select"
+                                                x-model="customer_data.country_id" 
+                                                class="cs-select2 cs-skin-slide cs-transparent form-control"
+                                                style="width: 100%;"
+                                                x-init="
+                                                    // Wait for Alpine to finish rendering the nested options loop[cite: 1]
+                                                    $nextTick(() => {
+                                                        $( $el ).select2({
+                                                            placeholder: 'Select Country',
+                                                            allowClear: true
+                                                        });
+
+                                                        // Crucial: Catch Select2 change event and manually push the chosen ID back to Alpine
+                                                        $( $el ).on('change', (e) => {
+                                                            customer_data.country_id = e.target.value;
+                                                        });
+                                                    });
+
+                                                    // If customer_data.country_id is changed programmatically elsewhere (e.g., resetForm), update Select2
+                                                    $watch('customer_data.country_id', value => $( $el ).val(value).trigger('change.select2') );
+                                                "
+                                            >
+                                                <option value="">Select Country</option>
+                                                <template x-for="country in country_lists" :key="country.id">
+                                                    <option :value="country.id" x-text="country.name"></option>
+                                                </template>
+                                            </select>
+                                            
+                                            <template x-if="errors.country_id">
+                                                <span class="form-error text-danger" x-text="errors.country_id"></span>
+                                            </template>
+                                        </div>
+
+                                </div>
+                                <br>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Row 4: Notes full width -->
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label class="form-label">Notes</label>
-                            <textarea
-                                class="form-control"
-                                x-model="notes"
-                                rows="3"
-                                placeholder="Any additional notes about this customer..."
-                            ></textarea>
-                        </div>
-                    </div>
-
+                </div>         
+                <div class="row-same-height" style="display: flex; justify-content: flex-end;">
                     <!-- Actions -->
                     <div class="form-actions">
                         <button
@@ -139,13 +205,11 @@
                         <button type="button" class="btn btn-default btn-lg" @click="resetForm()">
                             <i class="fa fa-refresh"></i> Reset
                         </button>
-                    </div>
-
-                </form>
-            </div>
+                    </div>            
+                </div>
+            </form>
         </div>
-    </main>
-
+    <!-- </main> -->
 </div>
 
 <style>
