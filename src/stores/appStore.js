@@ -57,26 +57,29 @@ export default (Alpine) => ({
             this.isLoading = false; 
         }
     }, 
-    async apiRequest(endpoint, data) {
+    async apiPost(endpoint, data) {
         this.isLoading = true;
         try {
             const response = await fetch(`${this.apiUrl}/${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Authorization': this.token ? `Bearer ${this.token}` : '' 
                 },
                 body: JSON.stringify(data)
             });
 
             const result = await response.json();
 
-            if (!response.ok) {
+            if (result.status===201 || result.status===200) {
+                return result;                
+            }else{
                 // Laravel validation errors validation structure handles arrays or explicit messages
                 const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
                 throw new Error(errorMsg);
             }
-            return result;
+            
         } catch (error) {
             this.addToast(error.message, "error");
             throw error;
@@ -86,26 +89,26 @@ export default (Alpine) => ({
     },
     async handleLogin(credentials) {
         try {
-            const data = await this.apiRequest('login', credentials);
+            const data = await this.apiPost('login', credentials);
             this.token = data.token; // Adapt based on your exact Laravel response structure
             this.user = data.user || { name: credentials.email };
             this.isLoggedIn = true;
             this.addToast("Welcome back!", "success");
             window.PineconeRouter.navigate('/dashboard');
         } catch (e) {
-            // Error managed by apiRequest
+            // Error managed by apiPost
         }
     },
     async handleRegister(formFields) {
         try {
-            const data = await this.apiRequest('register', formFields);
+            const data = await this.apiPost('register', formFields);
             this.token = data.token;
             this.user = data.user || { name: formFields.name };
             this.isLoggedIn = true;
             this.addToast("Account created successfully!", "success");
             window.PineconeRouter.navigate('/dashboard');
         } catch (e) {
-            // Error managed by apiRequest
+            // Error managed by apiPost
         }
     },    
     logout() {
@@ -153,9 +156,9 @@ export default (Alpine) => ({
         //     }, 5000);
         // }
         // Auto-remove success toasts, but let error toasts stay for manual dismissal
-        if (type === 'success') {
+        // if (type === 'success') {
             setTimeout(() => this.removeToast(id), 5000);
-        }
+        // }success
     },
     removeToast(id) {
         this.toasts = this.toasts.filter(t => t.id !== id);

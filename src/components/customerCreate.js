@@ -66,7 +66,7 @@ export default function customerCreate() {
                 this.errors.last_name = 'Last name is required.';
 
             if (!this.customer_data.gender_id)
-                this.errors.gender_id = 'Gender selection is required.';
+                this.errors.gender_id = 'Gender is required.';
 
             if (!this.customer_data.email.trim()) {
                 this.errors.email = 'Email is required.';
@@ -81,7 +81,7 @@ export default function customerCreate() {
                 this.errors.city = 'City is required.';
 
             if (!this.customer_data.country_id)
-                this.errors.country_id = 'Country selection is required.';
+                this.errors.country_id = 'Country is required.';
 
             return Object.keys(this.errors).length === 0;
         },
@@ -94,25 +94,27 @@ export default function customerCreate() {
 
             try {
                 // Adjust endpoint route matching your application setup
-                let response = await fetch('/api/customers', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        // Include CSRF or Bearer Tokens if applicable:
-                        // 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                    },
-                    body: JSON.stringify(this.customer_data)
-                });
+                let result = await Alpine.store('app').apiPost('customer/save_customer', this.customer_data);
 
-                let result = await response.json();
+                // let response = await fetch('/api/customer/save_customer', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'Accept': 'application/json',
+                //         // Include CSRF or Bearer Tokens if applicable:
+                //         // 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                //     },
+                //     body: JSON.stringify(this.customer_data)
+                // });
 
-                if (response.ok) {
+                // let result = await response.json();
+
+                if (result.status==201) {
                     this.submitted = true;
                     if (window.Alpine?.store('app')?.addToast) {
-                        Alpine.store('app').addToast('Customer created successfully!', 'success');
+                        Alpine.store('app').addToast(result.message, 'success');
                     }
-                } else if (response.status === 422) {
+                } else if (result.status === 422) {
                     // Extract validation errors returned directly from Laravel backend
                     this.errors = result.errors;
                 } else {
