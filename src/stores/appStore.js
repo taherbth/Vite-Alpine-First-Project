@@ -72,8 +72,8 @@ export default (Alpine) => ({
 
             const result = await response.json();
 
-            if (result.status===201 || result.status===200) {
-                return result;                
+            if (response.ok) {
+                return { status: response.status, data: result }; // Return both!             
             }else{
                 // Laravel validation errors validation structure handles arrays or explicit messages
                 const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';

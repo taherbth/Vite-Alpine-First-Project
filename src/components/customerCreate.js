@@ -95,7 +95,7 @@ export default function customerCreate() {
             try {
                 // Adjust endpoint route matching your application setup
                 let result = await Alpine.store('app').apiPost('customer/save_customer', this.customer_data);
-
+                console.log("result: " + JSON.stringify(result))
                 // let response = await fetch('/api/customer/save_customer', {
                 //     method: 'POST',
                 //     headers: {
@@ -112,13 +112,13 @@ export default function customerCreate() {
                 if (result.status==201) {
                     this.submitted = true;
                     if (window.Alpine?.store('app')?.addToast) {
-                        Alpine.store('app').addToast(result.message, 'success');
+                        Alpine.store('app').addToast(result.data.message, 'success');
                     }
                 } else if (result.status === 422) {
                     // Extract validation errors returned directly from Laravel backend
                     this.errors = result.errors;
                 } else {
-                    alert(result.message || 'Something went wrong on submission.');
+                    alert(result.data.message || 'Something went wrong on submission.');
                 }
             } catch (error) {
                 console.error('Submission error:', error);
