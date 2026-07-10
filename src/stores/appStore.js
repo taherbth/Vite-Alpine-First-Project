@@ -8,7 +8,7 @@ export default (Alpine) => ({
     token: Alpine.$persist(null).as('app-token'), // Store JWT/Sanctum token
     user: Alpine.$persist({ name: 'Guest' }).as('app-user'),
 
-    apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+    apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
     toasts: [],
     isLoading: false,
 
@@ -72,13 +72,12 @@ export default (Alpine) => ({
 
             const result = await response.json();
 
-            if (response.ok) {
-                return { status: response.status, data: result }; // Return both!             
-            }else{
-                // Laravel validation errors validation structure handles arrays or explicit messages
-                const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
-                throw new Error(errorMsg);
-            }
+            // if (response.ok) {
+            return { status: response.status, data: result }; // Return both!             
+            // }else{
+            //     const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
+            //     throw new Error(errorMsg);
+            // }
             
         } catch (error) {
             this.addToast(error.message, "error");
@@ -89,19 +88,35 @@ export default (Alpine) => ({
     },
     async handleLogin(credentials) {
         try {
-            const data = await this.apiPost('login', credentials);
-            this.token = data.token; // Adapt based on your exact Laravel response structure
-            this.user = data.user || { name: credentials.email };
-            this.isLoggedIn = true;
-            this.addToast("Welcome back!", "success");
-            window.PineconeRouter.navigate('/dashboard');
+                const { status, data } = await this.apiPost('login', credentials); // Destructure status too![cite: 5]
+                
+                // 1. Check if the backend rejected the login credentials
+                if (status === 401) {
+                    this.addToast(data.message || "Invalid email or password.", "error");
+                    return; // Stop execution here
+                }
+                
+                // 2. Check for other non-success codes if needed
+                if (status >= 400) {
+                    this.addToast(data.message || "An unexpected error occurred.", "error");
+                    return;
+                }
+
+                // 3. Success path
+                this.token = data.token; // Adapt based on your exact Laravel response structure[cite: 5]
+                this.user = data.user || { name: credentials.email };
+                this.isLoggedIn = true;
+                this.addToast("Welcome back!", "success");
+                window.PineconeRouter.navigate('/dashboard');
+                
         } catch (e) {
-            // Error managed by apiPost
+            // Fallback for network failures/cors errors managed by apiPost[cite: 5]
+            console.error("Login network exception:", e);
         }
     },
     async handleRegister(formFields) {
         try {
-            const data = await this.apiPost('register', formFields);
+            const { data } = await this.apiPost('register', formFields);
             this.token = data.token;
             this.user = data.user || { name: formFields.name };
             this.isLoggedIn = true;

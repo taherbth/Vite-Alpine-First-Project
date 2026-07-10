@@ -7,7 +7,7 @@ export const authGuard = (context) => {
     
     if (!isAuth && context.path !== '/') {
         Alpine.store('app').addToast("Access Denied: Please login first.", "error");
-        window.PineconeRouter.navigate
+        window.PineconeRouter.navigate('/');
         return false;
     }
     return true;

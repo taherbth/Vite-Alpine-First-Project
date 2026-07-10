@@ -103,8 +103,7 @@
                         <p>No customers found.</p>
                     </td>
                 </tr>
-
-                <!-- Rows -->
+                <!-- Rows -->                 
                 <template x-for="customer in paginated" :key="customer.id">
                     <tr :class="{ 'row-selected': selectedIds.includes(customer.id) }">
                         <td class="v-align-middle">
@@ -118,34 +117,26 @@
                                 <label :for="`chk_${customer.id}`"></label>
                             </div>
                         </td>
-                        <td class="v-align-middle" x-text="customer.name"></td>
+                        <!-- Updated to use matching backend keys -->
+                        <td class="v-align-middle" x-text="customer.full_name"></td>
                         <td class="v-align-middle" x-text="customer.email"></td>
-                        <td class="v-align-middle" x-text="customer.phone"></td>
-                        <td class="v-align-middle" x-text="customer.address"></td>
-                        <td class="v-align-middle text-center" x-text="customer.totalSales"></td>
-                        <td class="v-align-middle" x-text="formatDate(customer.createdDate)"></td>
+                        <td class="v-align-middle" x-text="customer.cell_phone"></td>
+                        <td class="v-align-middle" x-text="customer.city"></td>
+                        <td class="v-align-middle text-center" x-text="customer.totalSales || '0.00'"></td>
+                        <td class="v-align-middle" x-text="formatDate(customer.created_at)"></td>
                         <td class="v-align-middle">
                             <span
                                 class="status-badge"
                                 :class="customer.status === 'active' ? 'badge-active' : 'badge-inactive'"
-                                x-text="customer.status"
+                                x-text="customer.status || 'active'"
                             ></span>
                         </td>
                         <td class="v-align-middle">
                             <div class="btn-group btn-actions">
-                                <a
-                                    title="Edit"
-                                    class="btn btn-sm edit-button"
-                                    :href="`/frontend/customer/${customer.id}/edit`"
-                                >
+                                <a title="Edit" class="btn btn-sm edit-button" :href="`/frontend/customer/${customer.id}/edit`">
                                     <i class="fa fa-pencil"></i>
                                 </a>
-                                <button
-                                    title="Delete"
-                                    type="button"
-                                    class="btn btn-sm btn-danger"
-                                    @click="deleteOne(customer.id)"
-                                >
+                                <button title="Delete" type="button" class="btn btn-sm btn-danger" @click="deleteOne(customer.id)">
                                     <i class="fa fa-trash-o"></i>
                                 </button>
                             </div>
@@ -159,32 +150,33 @@
     <!-- Pagination Footer -->
     <div class="pagination-footer">
         <div class="pagination-info">
-            Showing <strong x-text="fromRecord"></strong>–<strong x-text="toRecord"></strong>
-            of <strong x-text="filtered.length"></strong> customers
+            Showing <strong x-text="fromRecord"></strong>–<strong x-text="toRecord"></strong> of <strong x-text="totalRecords"></strong> customers
         </div>
-
         <div class="pagination-controls">
-            <!-- Prev -->
-            <button class="btn btn-sm btn-default"
+            <!-- Prev Button -->
+            <button type="button" class="btn btn-sm btn-default"
                 :disabled="currentPage === 1"
-                @click="goToPage(currentPage - 1)">
+                @click.prevent.stop="goToPage(currentPage - 1)">
                 <i class="fa fa-chevron-left"></i>
             </button>
 
             <!-- Page numbers -->
             <template x-for="page in pageNumbers" :key="page">
+                <!-- Add @click.native.prevent if standard prevent is being bypassed by a router module -->
                 <button
+                    type="button"  
                     class="btn btn-sm"
                     :class="page === currentPage ? 'btn-primary' : 'btn-default'"
-                    @click="goToPage(page)"
+                    @click.mousedown.prevent.stop="" 
+                    @click.prevent.stop="goToPage(page)"
                     x-text="page"
                 ></button>
             </template>
 
-            <!-- Next -->
-            <button class="btn btn-sm btn-default"
+            <!-- Next Button -->
+            <button type="button" class="btn btn-sm btn-default"
                 :disabled="currentPage === totalPages"
-                @click="goToPage(currentPage + 1)">
+                @click.prevent.stop="goToPage(currentPage + 1)">
                 <i class="fa fa-chevron-right"></i>
             </button>
         </div>

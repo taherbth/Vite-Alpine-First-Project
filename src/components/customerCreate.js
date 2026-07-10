@@ -68,9 +68,10 @@ export default function customerCreate() {
             if (!this.customer_data.gender_id)
                 this.errors.gender_id = 'Gender is required.';
 
-            if (!this.customer_data.email.trim()) {
-                this.errors.email = 'Email is required.';
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customer_data.email)) {
+            // if (!this.customer_data.email.trim()) {
+            //     this.errors.email = 'Email is required.';
+            // } else
+             if (this.customer_data.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customer_data.email)) {
                 this.errors.email = 'Enter a valid email address.';
             }
 
@@ -89,12 +90,12 @@ export default function customerCreate() {
         // Submit form data to your store API[cite: 2]
         async submitCustomer() {
             if (!this.validate()) return;
-
             this.submitting = true;
+            this.errors = {}; // Reset errors before submitting
 
             try {
                 // Adjust endpoint route matching your application setup
-                let result = await Alpine.store('app').apiPost('customer/save_customer', this.customer_data);
+                let result = await Alpine.store('app').apiPost('customers', this.customer_data);
                 console.log("result: " + JSON.stringify(result))
                 // let response = await fetch('/api/customer/save_customer', {
                 //     method: 'POST',
@@ -109,19 +110,20 @@ export default function customerCreate() {
 
                 // let result = await response.json();
 
-                if (result.status==201) {
+                if (result.status==201 || result.status==200) {
                     this.submitted = true;
                     if (window.Alpine?.store('app')?.addToast) {
                         Alpine.store('app').addToast(result.data.message, 'success');
+                        window.PineconeRouter.navigate('/customers');
                     }
                 } else if (result.status === 422) {
                     // Extract validation errors returned directly from Laravel backend
-                    this.errors = result.errors;
+                    this.errors = result.data.errors;
                 } else {
                     alert(result.data.message || 'Something went wrong on submission.');
                 }
             } catch (error) {
-                console.error('Submission error:', error);
+               console.error("Network or unexpected error:", error.message);
             } finally {
                 this.submitting = false;
             }
