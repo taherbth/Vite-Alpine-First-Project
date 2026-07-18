@@ -14,6 +14,8 @@ export const authGuard = (context) => {
 };
 export function initRouter() {
     window.addEventListener('alpine:init', () => {
+        if (window.__routerInitialized) return;   // prevent double route registration
+        window.__routerInitialized = true;
         window.PineconeRouter.settings.hash = false;
         window.PineconeRouter.settings.basePath = '/';
 
@@ -63,3 +65,5 @@ export function initRouter() {
         };
     });
 }
+
+

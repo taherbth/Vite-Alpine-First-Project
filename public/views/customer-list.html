@@ -15,7 +15,7 @@
     <!-- Toolbar: Search + Filter + Bulk Delete -->
     <div class="table-toolbar">
         <div class="toolbar-left">
-            <!-- Search -->
+            <!-- Search  @input="onFilterChange()" -->
             <div class="search-wrap">
                 <i class="fa fa-search search-icon"></i>
                 <input
@@ -23,7 +23,8 @@
                     class="form-control search-input"
                     placeholder="Search name, email, phone..."
                     x-model="search"
-                    @input="onFilterChange()"
+                    @input="onSearchInput()"
+                   
                 >
             </div>
 
@@ -36,6 +37,7 @@
 
             <!-- Per page -->
             <select class="form-control filter-select" x-model.number="perPage" @change="onFilterChange()">
+                <option value="2"> 2 / page</option>
                 <option value="5">5 / page</option>
                 <option value="10">10 / page</option>
                 <option value="25">25 / page</option>
@@ -95,7 +97,6 @@
                 </tr>
             </thead>
             <tbody>
-
                 <!-- Empty state -->
                 <tr x-show="paginated.length === 0">
                     <td colspan="9" class="empty-state">
@@ -148,36 +149,46 @@
     </div>
 
     <!-- Pagination Footer -->
-    <div class="pagination-footer">
+    <!-- <div class="pagination-footer">
         <div class="pagination-info">
             Showing <strong x-text="fromRecord"></strong>–<strong x-text="toRecord"></strong> of <strong x-text="totalRecords"></strong> customers
         </div>
         <div class="pagination-controls">
-            <!-- Prev Button -->
             <button type="button" class="btn btn-sm btn-default"
                 :disabled="currentPage === 1"
                 @click.prevent.stop="goToPage(currentPage - 1)">
                 <i class="fa fa-chevron-left"></i>
             </button>
-
-            <!-- Page numbers -->
-            <template x-for="page in pageNumbers" :key="page">
-                <!-- Add @click.native.prevent if standard prevent is being bypassed by a router module -->
+            <template x-for="page in pageNumbers" :key="'page-' + page">
                 <button
                     type="button"  
                     class="btn btn-sm"
                     :class="page === currentPage ? 'btn-primary' : 'btn-default'"
-                    @click.mousedown.prevent.stop="" 
-                    @click.prevent.stop="goToPage(page)"
+                    @click.stop.prevent="goToPage(page)"
                     x-text="page"
                 ></button>
             </template>
-
-            <!-- Next Button -->
             <button type="button" class="btn btn-sm btn-default"
                 :disabled="currentPage === totalPages"
                 @click.prevent.stop="goToPage(currentPage + 1)">
                 <i class="fa fa-chevron-right"></i>
+            </button>
+        </div>
+    </div> -->
+    <div class="pagination-footer">
+        <div class="pagination-info">
+            Showing <strong x-text="customers.length"></strong> customers
+        </div>
+        <div class="pagination-controls">
+            <button type="button" class="btn btn-sm btn-default"
+                :disabled="!prevCursor"
+                @click.prevent.stop="goToPage(prevCursor, 'prev')">
+                <i class="fa fa-chevron-left"></i> Prev
+            </button>
+            <button type="button" class="btn btn-sm btn-default"
+                :disabled="!hasMore"
+                @click.prevent.stop="goToPage(nextCursor, 'next')">
+                Next <i class="fa fa-chevron-right"></i>
             </button>
         </div>
     </div>

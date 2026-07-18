@@ -2,6 +2,7 @@ export default function customerTable() {
     // document.addEventListener('alpine:init', () => {
     //     Alpine.data('customerTable', () => ({
             // State Properties driven by UI models
+
         return {
             search: '',
             statusFilter: 'all',
@@ -21,14 +22,24 @@ export default function customerTable() {
             sortField: 'createdDate',
             sortOrder: 'desc',
 
+           
+
+            onSearchInput() {
+                clearTimeout(this._searchTimeout);
+                this._searchTimeout = setTimeout(() => {
+                    this.onFilterChange();
+                }, 400);
+            },
             // Component Init Wrapper
             async init() {
                 // Pull primary page payload
+                await this.$nextTick();
                 await this.fetchCustomers();
             },
 
             // API Query Core Engine
-            async fetchCustomers() {
+            async fetchCustomers(cursor = null) {
+                console.trace("fetchCustomers called! Current Page is:", this.currentPage);
                 // Generate standard Laravel Pagination Query URL Structure 
                 // e.g. /customers?page=1&per_page=10&search=john&status=active&sort_by=name&sort_order=asc
                 const queryParams = new URLSearchParams({
@@ -38,24 +49,30 @@ export default function customerTable() {
                     status: this.statusFilter,
                     sort_by: this.sortField,
                     sort_order: this.sortOrder
-                });
-
+                });  
+                // ✅ Dynamically add the cursor if it exists
+                if (cursor) {
+                    queryParams.set('cursor', cursor);
+                }               
+               
                 try {
                     // Accessing v1 framework instance from appStore global reference
                     const response = await Alpine.store('app').apiGet(`customers?${queryParams.toString()}`);
-                    
                     // Expecting response configuration structured via Laravel Resources / Pagination
                     // Adjust property extractions depending on exact Laravel API meta layouts
                     const payload = response.data; 
-
                     this.paginated = payload.data || [];
                     
                     // Parse standard server-side Laravel pagination metadata
-                    this.currentPage = payload.current_page || 1;
-                    this.totalPages = payload.last_page || 1;
-                    this.totalRecords = payload.total || 0;
-                    this.fromRecord = payload.from || 0;
-                    this.toRecord = payload.to || 0;
+                    this.currentPage = parseInt(payload.current_page || 1);
+                    this.totalPages = parseInt(payload.last_page || 1);
+                    this.totalRecords = parseInt(payload.total || 0);
+                    this.fromRecord = parseInt(payload.from || 0);
+                    this.toRecord = parseInt(payload.to || 0);
+
+                    this.nextCursor  = payload.next_cursor;
+                    this.prevCursor  = payload.prev_cursor;
+                    this.hasMore     = payload.has_more;
 
                     // Build explicit array range numbers for UI map lists
                     this.generatePageRange();
@@ -67,18 +84,20 @@ export default function customerTable() {
                 }
             },
 
-            // Event-driven Mutation Callbacks
-            async onFilterChange() {
-                this.currentPage = 1; // Reset to start index on modification filters
+            // Safeguarded mutation callback
+            async onFilterChange() {               
+               
+                this.currentPage = 1; 
                 await this.fetchCustomers();
             },
 
-            async goToPage(page) {
+            async goToPage(cursor = null,page) {
+
                 // Prevent navigating past max pages or below 1
                 if (page < 1 || page > this.totalPages) return;
                 
                 this.currentPage = page; // Set state
-                await this.fetchCustomers(); // Trigger API query string reload
+                await this.fetchCustomers(cursor); // Trigger API query string reload
             },
 
             async setSort(field) {

@@ -1,12 +1,14 @@
 // src/components/nav.js
 import { menuTemplate } from './sidebar-nav.js';
 
+
 export default function navLogic() {
     return {
         openMenu: null,
         isPinned: false,
         currentView: '',           // 👈 holds the rendered HTML
-        sidebarCollapsed: false, // 👈 Track collapsed state
+        sidebarCollapsed: false,
+        currentRoute: 'login', // Track the route keyword instead of a giant HTML string // 👈 Track collapsed state
 
         init() {
             // Inject sidebar
@@ -19,10 +21,10 @@ export default function navLogic() {
             const res = await fetch(path);
             this.currentView = await res.text();
             // Re-init Alpine on injected view content
-            this.$nextTick(() => {
-                Alpine.initTree(document.querySelector('#main'));
-            });
-        },
+            // this.$nextTick(() => {
+            //     Alpine.initTree(document.querySelector('#main'));
+            // });
+        },        
 
         toggle(menu) {
             this.openMenu = this.openMenu === menu ? null : menu;

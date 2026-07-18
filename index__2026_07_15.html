@@ -149,8 +149,41 @@
         <div class="page-content-wrapper">
             <div class="content">
                 <div>
-                    <main id="main"> 
-                         <div x-html="currentView"></div>
+                    <main id="main">            
+                        <!-- Auth Login Route -->
+                        <template x-if="currentRoute === 'login'">
+                            <div>
+                                <!-- Paste your HTML structure from auth-login.html here -->
+                            </div>
+                        </template>
+
+                        <!-- Dashboard Route -->
+                        <template x-if="currentRoute === 'dashboard'">
+                            <div>
+                                <!-- Paste your HTML structure from dashboard.html here -->
+                            </div>
+                        </template>
+
+                        <!-- Customers List Route -->
+                        <template x-if="currentRoute === 'customers'">
+                            <div x-data="customerTable">
+                                <!-- Paste your HTML structure from customer-list.html here -->
+                            </div>
+                        </template>
+
+                        <!-- Customer Create Route -->
+                        <template x-if="currentRoute === 'customer-create'">
+                            <div>
+                                <!-- Paste your HTML structure from customer-create.html here -->
+                            </div>
+                        </template>
+
+                        <!-- Sale Create Route -->
+                        <template x-if="currentRoute === 'sale-create'">
+                            <div>
+                                <!-- Paste your HTML structure from sale-create.html here -->
+                            </div>
+                        </template>
                     </main>
                 </div>
             </div>
