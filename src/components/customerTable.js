@@ -70,9 +70,19 @@ export default function customerTable() {
                     this.fromRecord = parseInt(payload.from || 0);
                     this.toRecord = parseInt(payload.to || 0);
 
-                    this.nextCursor  = payload.next_cursor;
-                    this.prevCursor  = payload.prev_cursor;
-                    this.hasMore     = payload.has_more;
+                    // For cursorPaginate
+                    // this.nextCursor  = payload.next_cursor;
+                    // this.prevCursor  = payload.prev_cursor;
+                    // this.hasMore     = payload.has_more;
+
+
+                    // Scout MiliSearch pagination
+                    // this.paginated    = response.data || [];
+                    // this.currentPage  = parseInt(response.current_page || 1);
+                    // this.totalPages   = parseInt(response.last_page || 1);
+                    // this.totalRecords = parseInt(response.total || 0);
+                    // this.fromRecord   = parseInt(response.from || 0);
+                    // this.toRecord     = parseInt(response.to || 0);
 
                     // Build explicit array range numbers for UI map lists
                     this.generatePageRange();
@@ -91,13 +101,20 @@ export default function customerTable() {
                 await this.fetchCustomers();
             },
 
-            async goToPage(cursor = null,page) {
+            async goToPage__normal_and_cursor_paginate(cursor = null,page) {
 
                 // Prevent navigating past max pages or below 1
                 if (page < 1 || page > this.totalPages) return;
                 
                 this.currentPage = page; // Set state
                 await this.fetchCustomers(cursor); // Trigger API query string reload
+            },
+            // Handler for Scout MiliSearch Pagination
+            goToPage(page) {
+               if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+                    this.currentPage = page; // Set state first
+                    this.fetchCustomers();    // Fetch updated page
+                }
             },
 
             async setSort(field) {
