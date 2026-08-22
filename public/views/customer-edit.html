@@ -1,0 +1,201 @@
+<div x-data="customerEdit" class="customer-create-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1 class="page-title">Edit Customer</h1>
+            <p class="page-subtitle">Update customer details below.</p>
+        </div>
+        <div class="page-header-right">
+            <a href="/customers" class="btn btn-default">
+                <i class="fa fa-arrow-left"></i> Back to Customers
+            </a>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div x-show="loading" class="text-center padding-30">
+        <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
+        <p class="text-muted mt-2">Loading customer data...</p>
+    </div>
+
+    <div class="row row-same-height" x-show="!loading" x-cloak>     
+        <form @submit.prevent="updateCustomer()">    
+            <div x-show="!submitted">                
+                <div class="row">
+                    <!-- First Column -->
+                    <div class="col-md-6">
+                        <div class="padding-30">
+                            <div class="form-group-attached">
+                                <!-- Customer No -->
+                                <div class="form-group form-group-default required" :class="errors.customer_no ? 'has-error' : ''">
+                                    <label for="customer_no">Customer No</label>
+                                    <input x-model="customer_data.customer_no" class="form-control" placeholder="Customer No">
+                                    <template x-if="errors.customer_no">
+                                        <span class="form-error text-danger" x-text="errors.customer_no"></span>
+                                    </template>
+                                </div>
+
+                                <!-- First Name -->
+                                <div class="form-group form-group-default required" :class="errors.first_name ? 'has-error' : ''">
+                                    <label for="first_name">First Name</label>
+                                    <input x-model="customer_data.first_name" class="form-control" placeholder="First name">
+                                    <template x-if="errors.first_name">
+                                        <span class="form-error text-danger" x-text="errors.first_name"></span>
+                                    </template>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="form-group form-group-default required" :class="errors.last_name ? 'has-error' : ''">
+                                    <label for="last_name">Last Name</label>
+                                    <input x-model="customer_data.last_name" class="form-control" placeholder="Last name">
+                                    <template x-if="errors.last_name">
+                                        <span class="form-error text-danger" x-text="errors.last_name"></span>
+                                    </template>
+                                </div>
+
+                                <!-- Gender -->
+                                <div class="form-group form-group-default required" :class="errors.gender_id ? 'has-error' : ''">
+                                    <label for="gender">Gender</label>
+                                    <select x-model="customer_data.gender_id" class="cs-select cs-skin-slide cs-transparent form-control">
+                                        <option value="">Select Gender</option>
+                                        <template x-for="gender in gender_lists" :key="gender.id">
+                                            <option :value="gender.id" x-text="gender.name" :selected="gender.id == customer_data.gender_id"></option>
+                                        </template>
+                                    </select>
+                                    <template x-if="errors.gender_id">
+                                        <span class="form-error text-danger" x-text="errors.gender_id"></span>
+                                    </template>
+                                </div>
+
+                                <!-- Mobile No -->
+                                <div class="form-group form-group-default" :class="errors.cell_phone ? 'has-error' : ''">
+                                    <label for="cell_phone">Mobile No</label>
+                                    <input x-model="customer_data.cell_phone" class="form-control" placeholder="Cell phone">
+                                    <template x-if="errors.cell_phone">
+                                        <span class="form-error text-danger" x-text="errors.cell_phone"></span>
+                                    </template>
+                                </div>
+
+                                <!-- Work Phone -->
+                                <div class="form-group form-group-default">
+                                    <label for="work_phone">Work phone</label>
+                                    <input x-model="customer_data.work_phone" class="form-control" placeholder="Work phone">
+                                </div>
+
+                                <!-- Email -->
+                                <div class="form-group form-group-default" :class="errors.email ? 'has-error' : ''">
+                                    <label for="email">Email</label>
+                                    <input x-model="customer_data.email" class="form-control" placeholder="Email">
+                                    <template x-if="errors.email">
+                                        <span class="form-error text-danger" x-text="errors.email"></span>
+                                    </template>
+                                </div>
+
+                                <!-- Date of Birth -->
+                                <div class="form-group form-group-default">
+                                    <label for="date_of_birth">Date of birth</label>
+                                    <input x-model.lazy="customer_data.date_of_birth" id="date_of_birth" class="form-control" placeholder="Select Date">
+                                </div>
+
+                            </div>
+                            <br>
+                        </div>
+                    </div>
+
+                    <!-- Second Column -->
+                    <div class="col-md-6">
+                        <div class="padding-30">
+                            <div class="form-group-attached">
+                                <!-- Address -->
+                                <div class="form-group form-group-default required" :class="errors.address ? 'has-error' : ''">
+                                    <label for="address">Address</label>
+                                    <input x-model="customer_data.address" class="form-control" placeholder="Address">
+                                    <template x-if="errors.address">
+                                        <span class="form-error text-danger" x-text="errors.address"></span>
+                                    </template>
+                                </div>
+
+                                <!-- Address 2 -->
+                                <div class="form-group form-group-default">
+                                    <label for="address2">Address2</label>
+                                    <input x-model="customer_data.address2" class="form-control" placeholder="Address2">
+                                </div>
+
+                                <!-- City -->
+                                <div class="form-group form-group-default required" :class="errors.city ? 'has-error' : ''">
+                                    <label for="city">City</label>
+                                    <input x-model="customer_data.city" class="form-control" placeholder="City">
+                                    <template x-if="errors.city">
+                                        <span class="form-error text-danger" x-text="errors.city"></span>
+                                    </template>
+                                </div>
+
+                                <!-- Zip -->
+                                <div class="form-group form-group-default">
+                                    <label for="zip">Zip</label>
+                                    <input x-model="customer_data.zip" class="form-control" placeholder="Zip">
+                                </div>
+
+                                <!-- Country Select2 Integration -->
+                                <div class="form-group form-group-default required" :class="errors.country_id ? 'has-error' : ''">
+                                    <label for="country_id">Country</label>
+                                    
+                                    <select 
+                                        id="country_select"
+                                        x-model="customer_data.country_id" 
+                                        class="cs-select2 cs-skin-slide cs-transparent form-control"
+                                        style="width: 100%;"
+                                        x-init="
+                                            $nextTick(() => {
+                                                $( $el ).select2({
+                                                    placeholder: 'Select Country',
+                                                    allowClear: true
+                                                });
+
+                                                $( $el ).on('change', (e) => {
+                                                    customer_data.country_id = e.target.value;
+                                                });
+                                            });
+
+                                            // Sync Select2 dropdown whenever customer_data.country_id is loaded from API
+                                            $watch('customer_data.country_id', value => $( $el ).val(value).trigger('change.select2') );
+                                        "
+                                    >
+                                        <option value="">Select Country</option>
+                                        <template x-for="country in country_lists" :key="country.id">
+                                            <option :value="country.id" x-text="country.name" :selected="country.id == customer_data.country_id"></option>
+                                        </template>
+                                    </select>
+                                    
+                                    <template x-if="errors.country_id">
+                                        <span class="form-error text-danger" x-text="errors.country_id"></span>
+                                    </template>
+                                </div>
+
+                            </div>
+                            <br>
+                        </div>
+                    </div>
+                </div>
+            </div>         
+
+            <div class="row-same-height" style="display: flex; justify-content: flex-end;">
+                <div class="form-actions">
+                    <button
+                        type="submit"
+                        class="btn btn-success btn-lg"
+                        :disabled="submitting"
+                    >
+                        <span x-show="!submitting"><i class="fa fa-save"></i> Update Customer</span>
+                        <span x-show="submitting" x-cloak>
+                            <i class="fa fa-spinner fa-spin"></i> Updating...
+                        </span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-lg" @click="resetForm()">
+                        <i class="fa fa-refresh"></i> Reset
+                    </button>
+                </div>            
+            </div>
+        </form>
+    </div>
+</div>

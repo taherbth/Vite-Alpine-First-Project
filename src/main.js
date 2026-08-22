@@ -12,7 +12,7 @@ import contactForm from './components/contactForm.js';
 import postsView from './components/postsView.js';
 import customerTable from './components/customerTable.js';
 import customerCreate from './components/customerCreate.js';
-
+import customerEdit from './components/customerEdit.js';
 
 // 1. Assign to window FIRST
 window.Alpine = Alpine
@@ -31,7 +31,7 @@ Alpine.data('appData', () =>({ features: [{title: 'Vite Powered'}]}));
 
 Alpine.data('customerTable', customerTable);
 Alpine.data('customerCreate', customerCreate);
-
+Alpine.data('customerEdit', customerEdit);
 
 // 4. Initialize router
 initRouter()

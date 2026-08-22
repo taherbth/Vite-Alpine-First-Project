@@ -53,6 +53,14 @@ export function initRouter() {
             }]
         });
 
+        // ADD THIS DYNAMIC ROUTE FOR EDIT:
+        window.PineconeRouter.add('/customers/:id/edit', {
+            handlers: [authGuard, (context) => {
+                // You can access context.params.id here if needed
+                nav().loadView('/views/customer-edit.html');
+            }]
+        });
+
         window.PineconeRouter.add('/sale/create', {
             handlers: [authGuard, (context) => {
                 nav().loadView('/views/sale-create.html');

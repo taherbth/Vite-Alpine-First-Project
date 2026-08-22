@@ -23,7 +23,6 @@ export default function customerTable() {
             sortOrder: 'desc',
 
            
-
             onSearchInput() {
                 clearTimeout(this._searchTimeout);
                 this._searchTimeout = setTimeout(() => {
@@ -166,23 +165,66 @@ export default function customerTable() {
                 } else {
                     this.selectedIds.push(id);
                 }
-            },
+            },          
+            async deleteItems(id = null, targetUrl = '', redirectUrl = '') {
+                
+                // Fallback to selectedIds if no single ID is passed
+                const item_ids = id ? [id] : this.selectedIds;
 
-            // CRUD Action Execution Wrappers
-            async deleteOne(id) {
-                if (confirm("Are you sure you want to remove this customer record?")) {
-                    try {
-                        const response = await fetch(`${Alpine.store('app').apiUrl}/customers/${id}`, {
-                            method: 'DELETE',
-                            headers: { 'Authorization': `Bearer ${Alpine.store('app').token}` }
-                        });
-                        if (response.ok) {
-                            Alpine.store('app').addToast("Customer record deleted successfully.", "success");
-                            await this.fetchCustomers();
+                if (item_ids.length === 0) {
+                    alert('Please select at least one item to delete.');
+                    return;
+                }
+
+                const message = item_ids.length === 1 
+                    ? 'Are you sure you want to delete this customer?' 
+                    : `Are you sure you want to delete ${item_ids.length} selected customers?`;
+
+                if (!confirm(message)) {
+                    return;
+                }
+                try {
+                        // Adjust endpoint route matching your application setup
+                        let result = await Alpine.store('app').apiPost(targetUrl, { item_ids: item_ids });
+                        console.log("result: " + JSON.stringify(result))                
+
+                        if (result.status==201 || result.status==200) {
+                            this.submitted = true;
+                            if (window.Alpine?.store('app')?.addToast) {
+                                Alpine.store('app').addToast(result.data.message, 'success');
+                                await this.fetchCustomers();
+                            }
+                        } else if (result.status === 422) {
+                            // Extract validation errors returned directly from Laravel backend
+                            this.errors = result.data.errors;
+                        } else {
+                            alert(result.data.message || 'Something went wrong on submission.');
                         }
-                    } catch (e) {
-                        Alpine.store('app').addToast("Failed executing remote drop transaction.", "error");
-                    }
+                    } catch (error) {
+                       console.error("Network or unexpected error:", error.message);
+                    } finally {
+                        this.submitting = false;
+                }
+
+                // try {
+                //     const response = await fetch(`${Alpine.store('app').apiUrl}`+targetUrl, {
+                //         method: 'POST',
+                //         headers: { 'Authorization': `Bearer ${Alpine.store('app').token}` },
+                //         'Content-Type': 'application/json', // <-- CRITICAL
+                //         body: JSON.stringify({ item_ids: item_ids })
+                //     });                    
+                // } catch (error) {
+                //     console.error('Delete request failed:', error);
+                //     alert('A network error occurred.');
+                // }
+            },
+            editCustomer(id) {
+                // Client-side routing via Pinecone Router
+                if (window.PineconeRouter) {
+                    window.PineconeRouter.navigate(`/customers/${id}/edit`);
+                } else {
+                    // Fallback for standard page redirection
+                    window.location.href = `/customers/${id}/edit`;
                 }
             }
         }

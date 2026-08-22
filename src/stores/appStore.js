@@ -86,6 +86,32 @@ export default (Alpine) => ({
             this.isLoading = false;
         }
     },
+    async apiPut(endpoint, body) {
+        this.isLoading = true;
+        try {
+            const response = await fetch(`${this.apiUrl}${endpoint}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${this.token}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+
+            return {
+                status: response.status,
+                data: data
+            };
+        } catch (error) {
+            this.addToast(error.message, "error");
+            throw error;
+        }finally {
+            this.isLoading = false;
+        }
+    },
     async handleLogin(credentials) {
         try {
                 const { status, data } = await this.apiPost('login', credentials); // Destructure status too![cite: 5]
@@ -247,7 +273,6 @@ export default (Alpine) => ({
         // Lock scroll so page doesn't move behind modal
         document.body.style.overflow = 'hidden';
     },
-
     closeModal() {
         this.modal.isOpen = false;
         document.body.style.overflow = 'auto';

@@ -39,8 +39,7 @@ export default function customerCreate() {
         async loadCommonResources() {
             try {
                 let result = await Alpine.store('app').apiGet('common-resources');
-                // let result = await response.json();
-                
+                // let result = await response.json();                
                 if (result && result.data) {
                     this.gender_lists = result.data.gender_lists;
                     this.country_lists = result.data.country_lists;
@@ -96,19 +95,7 @@ export default function customerCreate() {
             try {
                 // Adjust endpoint route matching your application setup
                 let result = await Alpine.store('app').apiPost('customers', this.customer_data);
-                console.log("result: " + JSON.stringify(result))
-                // let response = await fetch('/api/customer/save_customer', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         'Accept': 'application/json',
-                //         // Include CSRF or Bearer Tokens if applicable:
-                //         // 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                //     },
-                //     body: JSON.stringify(this.customer_data)
-                // });
-
-                // let result = await response.json();
+                console.log("result: " + JSON.stringify(result))                
 
                 if (result.status==201 || result.status==200) {
                     this.submitted = true;
@@ -129,7 +116,7 @@ export default function customerCreate() {
             }
         },
 
-        // Reset all states back to default values[cite: 2]
+        // Reset all states back to default values
         resetForm() {
             this.customer_data = {
                 customer_no: '', first_name: '', last_name: '', gender_id: '',

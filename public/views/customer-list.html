@@ -45,11 +45,11 @@
         </div>
 
         <div class="toolbar-right">
-            <!-- Bulk Delete -->
+            <!-- Bulk Delete Button -->
             <button
                 class="btn btn-danger"
                 :disabled="selectedIds.length === 0"
-                @click="deleteSelected()"
+                @click="deleteItems(null, 'customers/remove_customer', '/customers')"
                 :title="selectedIds.length ? `Delete ${selectedIds.length} selected` : 'Select rows to delete'"
             >
                 <i class="pg-trash"></i>
@@ -134,10 +134,21 @@
                         </td>
                         <td class="v-align-middle">
                             <div class="btn-group btn-actions">
-                                <a title="Edit" class="btn btn-sm edit-button" :href="`/frontend/customer/${customer.id}/edit`">
+                                <button 
+                                    type="button" 
+                                    title="Edit" 
+                                    class="btn btn-sm edit-button"
+                                    @click="editCustomer(customer.id)"
+                                >
                                     <i class="fa fa-pencil"></i>
-                                </a>
-                                <button title="Delete" type="button" class="btn btn-sm btn-danger" @click="deleteOne(customer.id)">
+                                </button>
+                                <!-- Table Row Single Delete Button -->
+                                <button 
+                                    title="Delete" 
+                                    type="button" 
+                                    class="btn btn-sm btn-danger" 
+                                    @click="deleteItems(customer.id, 'customers/remove_customer', '/customers')"
+                                >
                                     <i class="fa fa-trash-o"></i>
                                 </button>
                             </div>
