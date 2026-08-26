@@ -9,9 +9,11 @@ export default (Alpine) => ({
     user: Alpine.$persist({ name: 'Guest' }).as('app-user'),
 
     apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
+    // -----------------------------------------------------------------
+    // Dynamic Environment Configuration
+    // -----------------------------------------------------------------
+    
     toasts: [],
-    isLoading: false,
-
     posts: [],
     isLoading: false,
     modal: {

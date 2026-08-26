@@ -92,10 +92,8 @@ export default function customerTable() {
                     console.error("Failed executing customer listing acquisition:", error);
                 }
             },
-
             // Safeguarded mutation callback
-            async onFilterChange() {               
-               
+            async onFilterChange() {  
                 this.currentPage = 1; 
                 await this.fetchCustomers();
             },
