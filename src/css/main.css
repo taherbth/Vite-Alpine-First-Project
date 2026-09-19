@@ -6,7 +6,6 @@
 @import "dashboard.css";
 @import "apex-chart.css";
 
-
 /* Prevent horizontal scrolling across the entire page */
 html, 
 body {
@@ -86,4 +85,62 @@ html body .page-sidebar .sidebar-menu .menu-items > li.open > ul.sub-menu {
 }
 .min-h-screen{
   min-height: 50vh !important;
+}
+
+/* Date field */
+
+/* Container adjustments */
+.flatpickr-calendar.inline {
+    width: 100% !important;
+    max-width: 320px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-top: 8px;
+}
+
+/* Header & Month/Year navigation */
+.flatpickr-months {
+    background: #f8f9fa;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 4px 0;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    font-weight: 600;
+    color: #333333;
+}
+
+/* Days of the week header (Mon, Tue, etc.) */
+span.flatpickr-weekday {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+/* Individual day cells */
+.flatpickr-day {
+    border-radius: 6px;
+    color: #212529;
+}
+
+/* Selected day */
+.flatpickr-day.selected, 
+.flatpickr-day.selected:hover {
+    background: #0d6efd !important; /* Change to your primary theme color */
+    border-color: #0d6efd !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Hover state on non-selected days */
+.flatpickr-day:hover {
+    background: #e9ecef;
+}
+
+/* Today's indicator */
+.flatpickr-day.today {
+    border-color: #0d6efd;
 }

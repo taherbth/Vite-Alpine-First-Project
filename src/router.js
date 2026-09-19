@@ -3,7 +3,7 @@
 // 1. Define the Guard
 export const authGuard = (context) => {
     // Access the global store
-     const isAuth = Alpine.store('app').isLoggedIn;
+    const isAuth = Alpine.store('app').isLoggedIn;
     
     if (!isAuth && context.path !== '/') {
         Alpine.store('app').addToast("Access Denied: Please login first.", "error");
@@ -30,7 +30,7 @@ export function initRouter() {
         });
 
         window.PineconeRouter.add('/signup', {
-            handlers: [authGuard, (context) => {
+            handlers: [ (context) => {
                 nav().loadView('/views/signin-signup/auth-signup.html');
             }]
         });

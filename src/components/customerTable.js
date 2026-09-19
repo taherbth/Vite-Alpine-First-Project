@@ -139,10 +139,7 @@ export default function customerTable() {
                 return this.sortOrder === 'asc' ? 'fa-sort-amount-asc text-primary' : 'fa-sort-amount-desc text-primary';
             },
 
-            formatDate(dateString) {
-                if (!dateString) return 'N/A';
-                return new Date(dateString).toLocaleDateString();
-            },
+            
 
             // Select and Multi-batch toggles[cite: 6]
             get allChecked() {

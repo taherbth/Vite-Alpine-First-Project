@@ -1,6 +1,9 @@
 // vite.config.js
 import { defineConfig } from 'vite'
-import viteImagemin from 'vite-plugin-imagemin'
+// import viteImagemin from 'vite-plugin-imagemin'
+import imagemin from 'vite-plugin-imagemin';
+// Fallback for default export resolution
+const viteImagemin = typeof imagemin === 'function' ? imagemin : imagemin.default;
 
 export default defineConfig({
   base: '/',

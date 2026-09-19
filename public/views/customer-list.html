@@ -84,6 +84,9 @@
                     <th @click="setSort('address')" class="sortable">
                         Address <i class="fa" :class="sortIcon('address')"></i>
                     </th>
+                    <th @click="setSort('dateOfBirth')" class="sortable">
+                        Date Of Birth <i class="fa" :class="sortIcon('dateOfBirth')"></i>
+                    </th>
                     <th @click="setSort('totalSales')" class="sortable">
                         Total Sales <i class="fa" :class="sortIcon('totalSales')"></i>
                     </th>
@@ -123,8 +126,9 @@
                         <td class="v-align-middle" x-text="customer.email"></td>
                         <td class="v-align-middle" x-text="customer.cell_phone"></td>
                         <td class="v-align-middle" x-text="customer.city"></td>
+                        <td class="v-align-middle" x-text="$formatToTextDate(customer.date_of_birth)"></td>
                         <td class="v-align-middle text-center" x-text="customer.totalSales || '0.00'"></td>
-                        <td class="v-align-middle" x-text="formatDate(customer.created_at)"></td>
+                        <td class="v-align-middle" x-text="$formatDate(customer.created_at)"></td>
                         <td class="v-align-middle">
                             <span
                                 class="status-badge"

@@ -102,9 +102,18 @@
                                     <!-- Date of Birth (Alpine relies on .lazy modifier via x-model.lazy) -->
                                     <div class="form-group form-group-default">
                                         <label for="date_of_birth">Date of birth</label>
-                                        <input x-model.lazy="customer_data.date_of_birth" id="date_of_birth" class="form-control" placeholder="Select Date">
-                                    </div>
-
+                                        <input 
+                                            type="text" 
+                                            id="date_of_birth" 
+                                            name="date_of_birth"
+                                            class="form-control"
+                                            placeholder="Select Date"
+                                            x-data="datePicker(
+                                                () => customer_data?.date_of_birth, 
+                                                val => { if (customer_data) customer_data.date_of_birth = val; }
+                                            )"
+                                        >
+                                    </div>                                    
                                 </div>
                                 <br>
                             </div>
