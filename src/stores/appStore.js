@@ -16,6 +16,27 @@ export default (Alpine) => ({
     toasts: [],
     posts: [],
     isLoading: false,
+    // -----------------------------------------------------------------
+    // Media Gallery State
+    // -----------------------------------------------------------------
+   gallery: {
+        items: [],
+        categories: ['all'],
+        selectedCategory: 'all',
+        searchQuery: '',
+        layout: 'grid',
+        activeMediaIndex: null,
+        lightboxOpen: false,
+        isUploading: false,
+        isDragging: false, // Tracks dragover state for UI styling
+
+        // Pagination State
+        page: 1,
+        perPage: 12,
+        lastPage: 1,
+        isLoadingMore: false,
+        hasMore: true
+    },
     modal: {
         isOpen: false,
         title: '',
@@ -153,7 +174,10 @@ export default (Alpine) => ({
         } catch (e) {
             // Error managed by apiPost
         }
-    },    
+    }, 
+    async createGalleryWithCover(mediaObject){
+        alert(mediaObject.title)
+    },   
     logout() {
         this.isLoggedIn = false;
         this.token = null;
@@ -278,5 +302,198 @@ export default (Alpine) => ({
     closeModal() {
         this.modal.isOpen = false;
         document.body.style.overflow = 'auto';
+    },
+    // -----------------------------------------------------------------
+    // Media Gallery Actions & Getters
+    // -----------------------------------------------------------------
+
+    /**
+     * Computed getter for filtering and searching media
+     */
+    get filteredGallery() {
+        return this.gallery.items.filter(item => {
+            const matchesCategory = this.gallery.selectedCategory === 'all' || item.category === this.gallery.selectedCategory;
+            const matchesSearch = item.title.toLowerCase().includes(this.gallery.searchQuery.toLowerCase());
+            return matchesCategory && matchesSearch;
+        });
+    },
+
+    /**
+     * Fetch media assets from API
+     */
+   
+    async loadNextPage() {
+        if (!this.gallery.hasMore) return;
+        this.gallery.page++;
+        await this.fetchGallery();
+    },
+
+    // Filter/Search change handlers (Resets pagination)
+    setCategory(category) {
+        this.gallery.selectedCategory = category;
+        this.fetchGallery(true);
+    },
+    // -----------------------------------------------------------------
+    // Multi-File & Drag-and-Drop Upload
+    // -----------------------------------------------------------------
+    async uploadFiles(fileList, extraData = {}) {
+        if (!fileList || fileList.length === 0) return;
+
+        this.gallery.isUploading = true;
+        const files = Array.from(fileList);
+        const uploadPromises = [];
+
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            Object.keys(extraData).forEach(key => formData.append(key, extraData[key]));
+
+            const promise = fetch(`${this.apiUrl}/galleries`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': this.token ? `Bearer ${this.token}` : ''
+                },
+                body: formData
+            }).then(async (res) => {
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.message || `Failed to upload ${file.name}`);
+                return result.data || result;
+            });
+
+            uploadPromises.push(promise);
+        }
+
+        try {
+            const uploadedItems = await Promise.all(uploadPromises);
+            // Prepend newly uploaded items to top of gallery
+            this.gallery.items = [...uploadedItems, ...this.gallery.items];
+            this.addToast(`${uploadedItems.length} file(s) uploaded successfully!`, 'success');
+        } catch (error) {
+            this.addToast(error.message, 'error');
+        } finally {
+            this.gallery.isUploading = false;
+            this.gallery.isDragging = false;
+        }
+    },
+
+    setSearchQuery(query) {
+        this.gallery.searchQuery = query;
+        this.fetchGallery(true);
+    },
+    /**
+     * Creates a new gallery album along with its cover photo and extra media files.
+     */
+    async createGalleryWithCover({ title, description, coverPhoto, files }) {
+        this.gallery.isUploading = true;
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description || '');
+        formData.append('cover_photo', coverPhoto);
+
+        // Append multiple files for gallery upload
+        if (files && files.length > 0) {
+            Array.from(files).forEach((file, index) => {
+                formData.append(`files[${index}]`, file);
+            });
+        }      
+        console.log("body : "+formData)  
+        try {
+            const response = await fetch(`${this.apiUrl}/galleries`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': this.token ? `Bearer ${this.token}` : '' 
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                return { status: response.status, data: result }; // Return both!             
+            }else{
+                const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
+                throw new Error(errorMsg);
+            }
+            
+        } catch (error) {
+            this.addToast(error.message, "error");
+            throw error;
+        } finally {
+            this.gallery.isUploading = false;
+        }
+
+        // try {
+        //     const response = await fetch('/api/galleries', {
+        //         method: 'POST',
+        //         headers: {
+        //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        //             // Do NOT set 'Content-Type': 'multipart/form-data'; browser sets boundary automatically
+        //         },
+        //         body: formData
+        //     });
+
+        //     if (!response.ok) {
+        //         throw new Error('Upload failed');
+        //     }
+
+        //     const data = await response.json();
+            
+        //     this.addToast('Album created successfully!', 'success');
+        //     return true;
+
+        // } catch (error) {
+        //     console.error('Error creating gallery:', error);
+        //     this.addToast('Failed to create album. Please try again.', 'error');
+        //     return false;
+
+        // } finally {
+        //     this.gallery.isUploading = false;
+        // }
+    },
+    /**
+     * Delete Media Item
+     */
+    async deleteMedia(id) {
+        if (!confirm("Are you sure you want to delete this media item?")) return;
+
+        try {
+            await this.apiDelete(`media/${id}`);
+            this.gallery.items = this.gallery.items.filter(item => item.id !== id);
+            this.addToast("Item deleted", "success");
+            
+            if (this.gallery.lightboxOpen) {
+                this.closeLightbox();
+            }
+        } catch (error) {
+            this.addToast("Failed to delete item", "error");
+        }
+    },
+    // -----------------------------------------------------------------
+    // Lightbox Controls
+    // -----------------------------------------------------------------
+    openLightbox(index) {
+        this.gallery.activeMediaIndex = index;
+        this.gallery.lightboxOpen = true;
+        document.body.style.overflow = 'hidden';
+    },
+
+    closeLightbox() {
+        this.gallery.lightboxOpen = false;
+        this.gallery.activeMediaIndex = null;
+        document.body.style.overflow = 'auto';
+    },
+
+    nextMedia() {
+        if (this.gallery.activeMediaIndex === null) return;
+        const total = this.filteredGallery.length;
+        this.gallery.activeMediaIndex = (this.gallery.activeMediaIndex + 1) % total;
+    },
+
+    prevMedia() {
+        if (this.gallery.activeMediaIndex === null) return;
+        const total = this.filteredGallery.length;
+        this.gallery.activeMediaIndex = (this.gallery.activeMediaIndex - 1 + total) % total;
     }
 })

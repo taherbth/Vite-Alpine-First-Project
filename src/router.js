@@ -41,6 +41,13 @@ export function initRouter() {
             }]
         });
 
+        // ADD GALLERY ROUTE:
+        window.PineconeRouter.add('/galleries', {
+            handlers: [authGuard, (context) => {
+                nav().loadView('/views/media-gallery/gallery-list.html');
+            }]
+        });
+
         window.PineconeRouter.add('/customers', {
             handlers: [authGuard, (context) => {
                 nav().loadView('/views/customer-list.html');
@@ -73,5 +80,6 @@ export function initRouter() {
         };
     });
 }
+
 
 

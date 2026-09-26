@@ -17,6 +17,7 @@ import customerTable from './components/customerTable.js';
 import customerCreate from './components/customerCreate.js';
 import customerEdit from './components/customerEdit.js';
 import { formatDate, formatToTextDate } from './utils/helpers.js';
+import mediaGallery from './components/mediaGallery.js'; // <-- Import
 
 // 1. Assign to window FIRST
 window.Alpine = Alpine
@@ -39,8 +40,10 @@ Alpine.data('customerEdit', customerEdit);
 Alpine.data('datePicker', datePicker);
 
 Alpine.magic('formatDate', () => (date, fallback) => formatDate(date, fallback));
-
 Alpine.magic('formatToTextDate', () => (date, fallback) => formatToTextDate(date, fallback));
+
+// Register Gallery Component
+Alpine.data('mediaGallery', mediaGallery); // <-- Register here
 
 // 4. Initialize router
 initRouter()

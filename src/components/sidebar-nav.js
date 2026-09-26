@@ -8,6 +8,13 @@ export const menuTemplate = `
             </a>
             <span class="icon-thumbnail bg-success"><i class="pg-home"></i></span>
         </li>
+        <!-- Media Galleries (NEW SECTION) -->
+        <li :class="{ 'open active': isActive('/galleries') }">
+            <a href="/galleries" @click="openMenu = null">
+                <span class="title">Media Galleries</span>
+            </a>
+            <span class="icon-thumbnail"><i class="fa fa-picture-o"></i></span>
+        </li>
 
         <!-- Customers -->
         <li :class="{ 'open': openMenu === 'customers' }">
