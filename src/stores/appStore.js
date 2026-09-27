@@ -95,16 +95,16 @@ export default (Alpine) => ({
 
             const result = await response.json();
 
-            // if (response.ok) {
-            return { status: response.status, data: result }; // Return both!             
-            // }else{
-            //     const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
-            //     throw new Error(errorMsg);
-            // }
+            if (!response.ok) {
+                const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
+                this.addToast(errorMsg, "error");
+            }            
+            return { status: response.status, data: result }; // Return both! 
             
         } catch (error) {
-            this.addToast(error.message, "error");
-            throw error;
+            // Handles network crashes / offline errors
+            this.addToast(error.message || "Network error", "error");
+            return { status: 500, data: null };
         } finally {
             this.isLoading = false;
         }
@@ -174,10 +174,7 @@ export default (Alpine) => ({
         } catch (e) {
             // Error managed by apiPost
         }
-    }, 
-    async createGalleryWithCover(mediaObject){
-        alert(mediaObject.title)
-    },   
+    },       
     logout() {
         this.isLoggedIn = false;
         this.token = null;
@@ -386,6 +383,7 @@ export default (Alpine) => ({
      */
     async createGalleryWithCover({ title, description, coverPhoto, files }) {
         this.gallery.isUploading = true;
+        this.isLoading = true;
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description || '');
@@ -410,18 +408,18 @@ export default (Alpine) => ({
 
             const result = await response.json();
 
-            if (response.ok) {
-                return { status: response.status, data: result }; // Return both!             
-            }else{
+            if (!response.ok) {
                 const errorMsg = result.message || Object.values(result.errors || {}).flat().join(' ') || 'Authentication failed';
-                throw new Error(errorMsg);
-            }
+                this.addToast(errorMsg, "error");
+            }            
+            return { status: response.status, data: result }; // Return both! 
             
         } catch (error) {
-            this.addToast(error.message, "error");
-            throw error;
+            // Handles network crashes / offline errors
+            this.addToast(error.message || "Network error", "error");
+            return { status: 500, data: null };
         } finally {
-            this.gallery.isUploading = false;
+            this.isLoading = false;
         }
 
         // try {

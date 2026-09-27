@@ -5,6 +5,7 @@ export default function mediaGallery() {
 
         gallery_data: {
             title: '',
+            coverFile: '',
             coverPreviewUrl: null,
             extraFiles: [],        // Raw File objects for submission
             galleryPreviews: []
@@ -209,31 +210,51 @@ export default function mediaGallery() {
             this.extraFiles.splice(index, 1);
         },
         async submitMediaGallery() {
-            if (!this.gallery_data.title || !this.gallery_data.coverFile) {
-                if (window.Alpine?.store('app')?.addToast) {
-                    Alpine.store('app').addToast('Please provide a title and a cover photo', 'error');
+            if (!this.validate()) alert('error')
+            this.submitting = true;
+            this.errors = {}; 
+            try{
+                const result = await Alpine.store('app').createGalleryWithCover({
+                    title: this.gallery_data.title,
+                    description: this.gallery_data.description,
+                    coverPhoto: this.gallery_data.coverFile,
+                    files: this.gallery_data.extraFiles
+                });
+                if (result.status==201 || result.status==200) {
+                    this.submitted = true;
+                    this.gallery_data.title = '';
+                    this.gallery_data.description = '';
+                    this.gallery_data.coverFile = null;
+                    if (this.gallery_data.coverPreviewUrl) URL.revokeObjectURL(this.gallery_data.coverPreviewUrl);
+                    this.gallery_data.coverPreviewUrl = null;
+
+                    this.gallery_data.galleryPreviews.forEach(item => URL.revokeObjectURL(item.url));
+                    this.gallery_data.galleryPreviews = [];
+                    this.gallery_data.extraFiles = [];
+                    if (window.Alpine?.store('app')?.addToast) {
+                        Alpine.store('app').addToast(result.data.message, 'success');
+                        //window.PineconeRouter.navigate('/customers');
+                    }
+                } else if (result.status === 422) {
+                    // Extract validation errors returned directly from Laravel backend
+                    this.errors = result.data.errors;
+                } else {
+                    alert(result.data.message || 'Something went wrong on submission.');
                 }
-                return;
-            }
-            const success = await Alpine.store('app').createGalleryWithCover({
-                title: this.gallery_data.title,
-                description: this.gallery_data.description,
-                coverPhoto: this.gallery_data.coverFile,
-                files: this.gallery_data.extraFiles
-            });
-            if (success) {
-                this.gallery_data.title = '';
-                this.gallery_data.description = '';
-                this.gallery_data.coverFile = null;
-                
-                if (this.gallery_data.coverPreviewUrl) URL.revokeObjectURL(this.gallery_data.coverPreviewUrl);
-                this.gallery_data.coverPreviewUrl = null;
+            } catch (error) {
+               console.error("Network or unexpected error:", error.message);
+            } finally {
+                this.submitting = false;
+            }            
+        },
+         validate() {
+            this.errors = {};
+            if (!this.gallery_data.title.trim())
+                this.errors.title = 'Title is required.';
 
-                this.gallery_data.galleryPreviews.forEach(item => URL.revokeObjectURL(item.url));
-                this.gallery_data.galleryPreviews = [];
-                this.gallery_data.extraFiles = [];
-            }
-        }
-
+            if (!this.gallery_data.coverFile.trim())
+                this.errors.coverFile = 'Cover photo is required.';
+            return Object.keys(this.errors).length === 0;
+        },
     }
 };
