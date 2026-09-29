@@ -2,7 +2,6 @@
 export default function mediaGallery() {
 
     return {
-
         gallery_data: {
             title: '',
             coverFile: '',
@@ -27,6 +26,8 @@ export default function mediaGallery() {
         selectedIds: [],
         sortField: 'createdDate',
         sortOrder: 'desc',
+        submitting: false,
+        submitted: false,
         async init() {
             // Fetch gallery items on initialization
             // this.$store.app.fetchGallery(true);
@@ -210,7 +211,7 @@ export default function mediaGallery() {
             this.extraFiles.splice(index, 1);
         },
         async submitMediaGallery() {
-            if (!this.validate()) alert('error')
+            if (!this.validate()) return;
             this.submitting = true;
             this.errors = {}; 
             try{
@@ -252,9 +253,9 @@ export default function mediaGallery() {
             if (!this.gallery_data.title.trim())
                 this.errors.title = 'Title is required.';
 
-            if (!this.gallery_data.coverFile.trim())
+            if (!this.gallery_data.coverFile)
                 this.errors.coverFile = 'Cover photo is required.';
-            return Object.keys(this.errors).length === 0;
+            return Object.keys(this.errors).length ? false : true;
         },
     }
 };

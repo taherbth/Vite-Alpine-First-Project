@@ -64,9 +64,12 @@
     <!-- Row 2: Form -->
     <form @submit.prevent="submitMediaGallery()" class="space-y-4 w-full">
         <!-- Title -->
-        <div>
+        <div class="form-group form-group-default required" :class="errors.title ? 'has-error' : ''">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Album Title *</label>
             <input type="text" x-model="gallery_data.title" class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:text-white" placeholder="e.g. Summer Vacation 2026" />
+            <template x-if="errors.title">
+                <span class="form-error text-danger" x-text="errors.title"></span>
+            </template>
         </div>
 
         <!-- Cover Photo Upload with Image Preview -->
@@ -79,8 +82,8 @@
                     <template x-if="gallery_data.coverPreviewUrl">
                         <img :src="gallery_data.coverPreviewUrl" class="w-full h-full object-cover" />
                     </template>
-                    <template x-if="!gallery_data.coverPreviewUrl">
-                        <span class="text-xs text-gray-400 text-center px-1">No Cover Selected</span>
+                    <template x-if="errors.coverFile">
+                        <span class="form-error text-danger text-xs text-gray-400 text-center px-1" x-text="errors.coverFile"> </span>
                     </template>
                 </div>
 
@@ -119,10 +122,11 @@
             </template>
         </div>
         <!-- Submit Button -->
-        <button type="submit" :disabled="$store.app.gallery.isUploading" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center justify-center space-x-2">
-            <span x-show="!$store.app.gallery.isUploading">Create Album</span>
-            <span x-show="$store.app.gallery.isUploading">Uploading Album & Cover...</span>
-        </button>
+        <button type="submit" :disabled="submitting" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center justify-center space-x-2">
+            <span x-show="!submitting">Create Album</span>
+            <span x-show="submitting">Uploading Album & Cover...</span>
+        </button> 
+         
     </form>
 </div>
    
