@@ -1,261 +1,220 @@
 // src/components/mediaGallery.js
-export default function mediaGallery() {
 
+function mediaGalleryComponent() {
     return {
-        gallery_data: {
-            title: '',
-            coverFile: '',
-            coverPreviewUrl: null,
-            extraFiles: [],        // Raw File objects for submission
-            galleryPreviews: []
-        },   // Array of { url, type } objects
+        activeAlbum: null,
+        showCreateModal: false,
         search: '',
-        statusFilter: 'all',
-        perPage: 10,
+        perPage: 12,
         currentPage: 1,
-
-        // Server Response Payload Vectors
-        paginated: [],      // Dynamic rows bound to table templates
-        totalRecords: 0,    // Total records available matching parameters
-        fromRecord: 0,      // Index range tracking bounds
-        toRecord: 0,
-        totalPages: 1,
-        pageNumbers: [],
-
-        // Operational lists
-        selectedIds: [],
-        sortField: 'createdDate',
-        sortOrder: 'desc',
+        paginated: [],
+        errors: {},
         submitting: false,
-        submitted: false,
+
+        // Lightbox & Filter States
+        lightboxOpen: false,
+        currentIndex: 0,
+        mediaTypeFilter: 'all',
+
         async init() {
-            // Fetch gallery items on initialization
-            // this.$store.app.fetchGallery(true);
-
-            // // Keyboard listeners for the Lightbox
-            // window.addEventListener('keydown', (e) => {
-            //     if (!this.$store.app.gallery.lightboxOpen) return;
-            //     if (e.key === 'Escape') this.$store.app.closeLightbox();
-            //     if (e.key === 'ArrowRight') this.$store.app.nextMedia();
-            //     if (e.key === 'ArrowLeft') this.$store.app.prevMedia();
-            // });
-                    // Pull primary page payload
             await this.$nextTick();
-            await this.fetchGallery();
-                
-        },
-
-        // API Query Core Engine
-        async fetchGallery__(reset = false) {
-            if (reset) {
-                this.gallery.page = 1;
-                this.gallery.items = [];
-                this.gallery.hasMore = true;
-            }
-
-            if (this.isLoading || this.gallery.isLoadingMore || !this.gallery.hasMore) return;
-
-            if (this.gallery.page === 1) {
-                this.isLoading = true;
+            const routeId = this.getGalleryIdFromUrl();
+            if (routeId) {
+                await this.loadGalleryData(routeId);
             } else {
-                this.gallery.isLoadingMore = true;
-            }
-
-            try {
-                // Sends query params: ?page=1&per_page=12&category=all&search=...
-                const queryParams = new URLSearchParams({
-                    page: this.gallery.page,
-                    per_page: this.gallery.perPage,
-                    category: this.gallery.selectedCategory,
-                    search: this.gallery.searchQuery
-                }).toString();
-
-                const response = await this.apiGet(`galleries?${queryParams}`);
-                
-                // Expected backend pagination structure (Laravel style or custom standard)
-                const newItems = response.data || response.items || response;
-                const meta = response.meta || response;
-
-                this.gallery.items = [...this.gallery.items, ...newItems];
-                this.gallery.lastPage = meta.last_page || 1;
-                this.gallery.hasMore = this.gallery.page < this.gallery.lastPage;
-
-                // Update dynamic categories
-                const cats = new Set(this.gallery.items.map(item => item.category).filter(Boolean));
-                this.gallery.categories = ['all', ...Array.from(cats)];
-            } catch (error) {
-                console.error('Failed to load gallery items:', error);
-            } finally {
-                this.isLoading = false;
-                this.gallery.isLoadingMore = false;
+                await this.fetchGallery();
             }
         },
-        handleGalleryMediaSelect(event) {
-            const files = Array.from(event.target.files);
-            
-            files.forEach(file => {
-                // Append file to raw files array for submission
-                this.extraFiles.push(file);
 
-                // Generate temporary blob URL for display
-                this.galleryPreviews.push({
-                    url: URL.createObjectURL(file),
-                    type: file.type.startsWith('video/') ? 'video' : 'image'
-                });
-            });
-
-            // Reset file input value to allow re-selecting identical files if needed
-            event.target.value = '';
+        getGalleryIdFromUrl() {
+            const match = window.location.pathname.match(/\/galleries\/(\d+)/);
+            return match ? match[1] : null;
         },
-        async fetchGallery(cursor = null) {
-            console.trace("fetchGallery called! Current Page is:", this.currentPage);
-            // Generate standard Laravel Pagination Query URL Structure 
-            // e.g. /customers?page=1&per_page=10&search=john&status=active&sort_by=name&sort_order=asc
+
+        async fetchGallery() {
             const queryParams = new URLSearchParams({
                 page: this.currentPage,
                 per_page: this.perPage,
-                search: this.search,
-                status: this.statusFilter,
-                sort_by: this.sortField,
-                sort_order: this.sortOrder
-            });  
-            // ✅ Dynamically add the cursor if it exists
-            if (cursor) {
-                queryParams.set('cursor', cursor);
-            }               
-           
-            try {
-                // Accessing v1 framework instance from appStore global reference
-                const response = await Alpine.store('app').apiGet(`galleries?${queryParams.toString()}`);
-                // Expecting response configuration structured via Laravel Resources / Pagination
-                // Adjust property extractions depending on exact Laravel API meta layouts
-                const payload = response.data; 
-                this.paginated = payload.data || [];
-                
-                // Parse standard server-side Laravel pagination metadata
-                this.currentPage = parseInt(payload.current_page || 1);
-                this.totalPages = parseInt(payload.last_page || 1);
-                this.totalRecords = parseInt(payload.total || 0);
-                this.fromRecord = parseInt(payload.from || 0);
-                this.toRecord = parseInt(payload.to || 0);
-
-                // For cursorPaginate
-                // this.nextCursor  = payload.next_cursor;
-                // this.prevCursor  = payload.prev_cursor;
-                // this.hasMore     = payload.has_more;
-
-
-                // Scout MiliSearch pagination
-                // this.paginated    = response.data || [];
-                // this.currentPage  = parseInt(response.current_page || 1);
-                // this.totalPages   = parseInt(response.last_page || 1);
-                // this.totalRecords = parseInt(response.total || 0);
-                // this.fromRecord   = parseInt(response.from || 0);
-                // this.toRecord     = parseInt(response.to || 0);
-
-                // Build explicit array range numbers for UI map lists
-                this.generatePageRange();
-                
-                // Clear state selection pointers on batch table updates
-                this.selectedIds = [];
-            } catch (error) {
-                console.error("Failed executing customer listing acquisition:", error);
-            }
-        },
-        // File Input / Drag & Drop Handlers
-        handleFileSelect(e) {
-            const files = e.target.files;
-            if (files.length) {
-                this.$store.app.uploadFiles(files);
-                e.target.value = ''; // Reset input
-            }
-        },
-        handleDrop(e) {
-            this.$store.app.gallery.isDragging = false;
-            const files = e.dataTransfer.files;
-            if (files.length) {
-                this.$store.app.uploadFiles(files);
-            }
-        },
-        // Infinite Scroll trigger
-        handleScroll(e) {
-            const el = e.target;
-            if (el.scrollHeight - el.scrollTop <= el.clientHeight + 100) {
-                this.$store.app.loadNextPage();
-            }
-        },
-        handleCoverSelect(e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (this.gallery_data.coverPreviewUrl) URL.revokeObjectURL(this.gallery_data.coverPreviewUrl);
-                this.gallery_data.coverFile = file;
-                this.gallery_data.coverPreviewUrl = URL.createObjectURL(file);
-            }
-        },
-        handleGalleryMediaSelect(e) {
-            const files = Array.from(e.target.files);
-            files.forEach(file => {
-                this.gallery_data.extraFiles.push(file);
-                this.gallery_data.galleryPreviews.push({
-                    url: URL.createObjectURL(file),
-                    type: file.type.startsWith('video/') ? 'video' : 'image'
-                });
+                search: this.search
             });
-            e.target.value = '';
-        },
-        removeGalleryMedia(index) {
-            if (this.galleryPreviews[index]?.url) {
-                URL.revokeObjectURL(this.galleryPreviews[index].url);
-            }
-            this.galleryPreviews.splice(index, 1);
-            this.extraFiles.splice(index, 1);
-        },
-        async submitMediaGallery() {
-            if (!this.validate()) return;
-            this.submitting = true;
-            this.errors = {}; 
-            try{
-                const result = await Alpine.store('app').createGalleryWithCover({
-                    title: this.gallery_data.title,
-                    description: this.gallery_data.description,
-                    coverPhoto: this.gallery_data.coverFile,
-                    files: this.gallery_data.extraFiles
-                });
-                if (result.status==201 || result.status==200) {
-                    this.submitted = true;
-                    this.gallery_data.title = '';
-                    this.gallery_data.description = '';
-                    this.gallery_data.coverFile = null;
-                    if (this.gallery_data.coverPreviewUrl) URL.revokeObjectURL(this.gallery_data.coverPreviewUrl);
-                    this.gallery_data.coverPreviewUrl = null;
 
-                    this.gallery_data.galleryPreviews.forEach(item => URL.revokeObjectURL(item.url));
-                    this.gallery_data.galleryPreviews = [];
-                    this.gallery_data.extraFiles = [];
-                    if (window.Alpine?.store('app')?.addToast) {
-                        Alpine.store('app').addToast(result.data.message, 'success');
-                        //window.PineconeRouter.navigate('/customers');
+            try {
+                const response = await Alpine.store('app').apiGet(`galleries?${queryParams.toString()}`);
+                const items = response.data?.data || response.data || response;
+                this.paginated = Array.isArray(items) ? items : [];
+
+                // Sync store items
+                Alpine.store('app').gallery.items = this.paginated;
+            } catch (error) {
+                console.error("Error fetching galleries:", error);
+                this.paginated = [];
+            }
+        },
+
+        openAlbumView(album) {
+            Alpine.store('app').gallery.activeAlbum = album;
+            if (window.PineconeRouter) {
+                window.PineconeRouter.navigate(`/galleries/${album.id}`);
+            }
+        },
+
+        // Computed getter — reads reactively from activeAlbum.media
+        get filteredAlbumMedia() {
+            if (!this.activeAlbum || !Array.isArray(this.activeAlbum.media)) return [];
+
+            if (this.mediaTypeFilter === 'image') {
+                return this.activeAlbum.media.filter(item => !item.mime_type || item.mime_type.startsWith('image'));
+            }
+            if (this.mediaTypeFilter === 'video') {
+                return this.activeAlbum.media.filter(item => item.mime_type && item.mime_type.startsWith('video'));
+            }
+            return this.activeAlbum.media;
+        },
+
+        get currentMediaItem() {
+            const list = this.filteredAlbumMedia;
+            if (this.currentIndex < 0 || this.currentIndex >= list.length) return null;
+            return list[this.currentIndex];
+        },
+
+        openLightbox(index) {
+            const parsedIndex = parseInt(index, 10);
+            if (isNaN(parsedIndex)) return;
+
+            this.currentIndex = parsedIndex;
+            this.lightboxOpen = true;
+        },
+
+        closeLightbox() {
+            this.lightboxOpen = false;
+        },
+
+        nextMedia() {
+            const list = this.filteredAlbumMedia;
+            if (list.length === 0) return;
+            this.currentIndex = (this.currentIndex + 1) % list.length;
+        },
+
+        prevMedia() {
+            const list = this.filteredAlbumMedia;
+            if (list.length === 0) return;
+            this.currentIndex = (this.currentIndex - 1 + list.length) % list.length;
+        },
+
+        async loadGalleryData(id) { 
+            try {
+                const response = await Alpine.store('app').apiGet(`galleries/${id}`);
+                this.activeAlbum = response.data?.data || response.data || response;
+            } catch (error) {
+                console.error("Error loading gallery details:", error);
+                this.activeAlbum = null;
+            }
+        },
+        async deleteMediaItem__(galleryId, mediaId) {
+            // Correct fallback to activeAlbum ID
+            const gId = galleryId || this.activeAlbum?.id;
+
+            if (!gId || !mediaId) {
+                console.error("Missing gallery ID or media ID", { galleryId: gId, mediaId });
+                if (typeof this.addToast === 'function') {
+                    this.addToast("Unable to delete item: Missing parameters", "error");
+                }
+                return;
+            }
+
+            try {
+                const endpoint = `galleries/${gId}/media/${mediaId}`;                
+                
+                // 1. Send DELETE request
+                await Alpine.store('app').deleteMedia(endpoint, gId, mediaId);
+
+                // 2. Mutate the core state array (activeAlbum.media) using a fresh array reference
+                if (this.activeAlbum && Array.isArray(this.activeAlbum.media)) {
+                    this.activeAlbum.media = [
+                        ...this.activeAlbum.media.filter(item => String(item.id) !== String(mediaId))
+                    ];
+                }
+
+                // 3. Sync Lightbox state if lightbox is open
+                if (this.lightboxOpen) {
+                    const remainingLength = this.filteredAlbumMedia.length;
+                    if (remainingLength === 0) {
+                        this.closeLightbox();
+                    } else if (this.currentIndex >= remainingLength) {
+                        this.currentIndex = remainingLength - 1;
                     }
-                } else if (result.status === 422) {
-                    // Extract validation errors returned directly from Laravel backend
-                    this.errors = result.data.errors;
-                } else {
-                    alert(result.data.message || 'Something went wrong on submission.');
+                }
+
+                if (typeof this.addToast === 'function') {
+                    this.addToast("Item deleted successfully", "success");
                 }
             } catch (error) {
-               console.error("Network or unexpected error:", error.message);
-            } finally {
-                this.submitting = false;
-            }            
+                console.error("Delete media catch triggered by:", error.name, error.message, error);
+                if (typeof this.addToast === 'function') {
+                    this.addToast(error.message || "Failed to delete item", "error");
+                }
+            }
         },
-         validate() {
-            this.errors = {};
-            if (!this.gallery_data.title.trim())
-                this.errors.title = 'Title is required.';
+        async deleteMediaItem(galleryId, mediaId) {
+            const gId = galleryId || this.activeAlbum?.id;
 
-            if (!this.gallery_data.coverFile)
-                this.errors.coverFile = 'Cover photo is required.';
-            return Object.keys(this.errors).length ? false : true;
+            if (!gId || !mediaId) {
+                console.error("Missing gallery ID or media ID", { galleryId: gId, mediaId });
+                return;
+            }
+
+            if (!confirm("Are you sure you want to delete this media file?")) return;
+
+            try {
+                const endpoint = `galleries/${gId}/media/${mediaId}`;
+                
+                // 1. Call Store API with endpoint, galleryId, and mediaId
+                await Alpine.store('app').deleteMedia(endpoint, gId, mediaId);
+
+                // 2. Remove media item from active activeAlbum state
+                if (this.activeAlbum && Array.isArray(this.activeAlbum.media)) {
+                    this.activeAlbum.media = [
+                        ...this.activeAlbum.media.filter(m => String(m.id) !== String(mediaId))
+                    ];
+                }
+
+                // 3. Sync Lightbox position
+                if (this.lightboxOpen) {
+                    const remaining = this.filteredAlbumMedia.length;
+                    if (remaining === 0) {
+                        this.closeLightbox();
+                    } else if (this.currentIndex >= remaining) {
+                        this.currentIndex = remaining - 1;
+                    }
+                }
+
+                // Trigger Toast (via global event dispatch or store)
+                this.triggerToast("Item deleted successfully", "success");
+            } catch (error) {
+                console.error("Delete media error:", error);
+                this.triggerToast(error.message || "Failed to delete item", "error");
+            }
         },
-    }
-};
+        // Helper function to handle toast dispatch safely
+        triggerToast(message, type = 'info') {
+            if (typeof this.addToast === 'function') {
+                this.addToast(message, type);
+            } else if (Alpine.store('app')?.addToast) {
+                Alpine.store('app').addToast(message, type);
+            } else {
+                // Dispatch global browser/Alpine event
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { message, type }
+                }));
+            }
+        }
+    };
+}
+
+// Register with Alpine when initialized
+document.addEventListener('alpine:init', () => {
+    Alpine.data('mediaGallery', mediaGalleryComponent);
+});
+
+window.mediaGallery = mediaGalleryComponent;
+export default mediaGalleryComponent;

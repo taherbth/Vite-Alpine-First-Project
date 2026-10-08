@@ -50,3 +50,8 @@ initRouter()
 
 // 5. Start Alpine last
 Alpine.start()
+document.addEventListener('pinecone-start', () => {
+     if (window.Alpine) {
+        window.Alpine.initTree(document.body);
+    }
+});

@@ -453,11 +453,11 @@ export default (Alpine) => ({
     /**
      * Delete Media Item
      */
-    async deleteMedia(id) {
+    async deleteMedia__(endpoint, galleryId, id) {
         if (!confirm("Are you sure you want to delete this media item?")) return;
 
         try {
-            await this.apiDelete(`media/${id}`);
+            await this.apiDelete(endpoint);
             this.gallery.items = this.gallery.items.filter(item => item.id !== id);
             this.addToast("Item deleted", "success");
             
@@ -465,8 +465,52 @@ export default (Alpine) => ({
                 this.closeLightbox();
             }
         } catch (error) {
+            console.error("Delete media catch triggered by:", error.name, error.message, error);
             this.addToast("Failed to delete item", "error");
         }
+    },
+    async deleteMedia(endpoint, galleryId, mediaId) {
+        const response = await fetch(`${this.apiUrl}/${endpoint.replace(/^\//, '')}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': this.token ? `Bearer ${this.token}` : '' 
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error ${response.status}`);
+        }
+
+        // Safely remove the media item from the targeted gallery in the store
+        if (this.gallery?.items && Array.isArray(this.gallery.items)) {
+            this.gallery.items = this.gallery.items.map(gallery => {
+                if (String(gallery.id) === String(galleryId) && Array.isArray(gallery.media)) {
+                    return {
+                        ...gallery,
+                        media: gallery.media.filter(m => String(m.id) !== String(mediaId))
+                    };
+                }
+                return gallery;
+            });
+        }
+
+        // Handle empty body responses (HTTP 204 or empty string) safely without triggering JSON parsing errors
+        if (response.status === 204) return {};
+        return await response.json().catch(() => ({ success: true }));
+    },
+    async apiDelete(endpoint) {
+        const response = await fetch(`${this.apiUrl}/${endpoint}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                // Natively attaches your global auth token if logged in[cite: 3]
+                'Authorization': this.token ? `Bearer ${this.token}` : '' 
+            }
+        });       
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
     },
     // -----------------------------------------------------------------
     // Lightbox Controls

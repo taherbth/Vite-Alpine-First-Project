@@ -137,9 +137,7 @@ export default function customerTable() {
             sortIcon(field) {
                 if (this.sortField !== field) return 'fa-sort text-muted';
                 return this.sortOrder === 'asc' ? 'fa-sort-amount-asc text-primary' : 'fa-sort-amount-desc text-primary';
-            },
-
-            
+            },           
 
             // Select and Multi-batch toggles[cite: 6]
             get allChecked() {

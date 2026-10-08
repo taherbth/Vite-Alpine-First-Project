@@ -48,6 +48,17 @@ export function initRouter() {
             }]
         });
 
+        window.PineconeRouter.add('/galleries/:id', {
+            handlers: [authGuard, (context) => {
+                // You can access context.params.id here if needed
+                nav().loadView('/views/media-gallery/media-view.html');
+                // Fetch album data using route ID after view loads
+                window.dispatchEvent(new CustomEvent('fetch-gallery', { 
+                    detail: { id: context.params.id } 
+                }));
+            }]
+        });
+
         window.PineconeRouter.add('/customers', {
             handlers: [authGuard, (context) => {
                 nav().loadView('/views/customer-list.html');
