@@ -7,7 +7,6 @@ export default (Alpine) => ({
     isLoggedIn: Alpine.$persist(false).as('app-logged-in'), 
     token: Alpine.$persist(null).as('app-token'), // Store JWT/Sanctum token
     user: Alpine.$persist({ name: 'Guest' }).as('app-user'),
-
     apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
     // -----------------------------------------------------------------
     // Dynamic Environment Configuration
@@ -194,7 +193,6 @@ export default (Alpine) => ({
     //     this.user.name = 'Guest';
     //     window.PineconeRouter.navigate('/'); // Redirect to home
     // },
-    apiUrl: import.meta.env.VITE_API_URL,
 
     // addToast(message, type = 'error') {
     //     const id = Date.now();
@@ -451,6 +449,72 @@ export default (Alpine) => ({
         // }
     },
     /**
+     * Upload additional media files to an existing gallery.
+     * Uses XHR (not fetch) so upload progress can be reported.
+     * Returns { status, data, media } — media is the array of newly created
+     * items when the backend returns them, otherwise null.
+     */
+    uploadMediaToGallery(galleryId, files, onProgress = null) {
+        return new Promise((resolve) => {
+            const formData = new FormData();
+            // Same field naming as createGalleryWithCover so the backend can share validation
+            Array.from(files).forEach((file, index) => {
+                formData.append(`files[${index}]`, file);
+            });
+
+            this.gallery.isUploading = true;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${this.apiUrl}/galleries/${galleryId}/media`);
+            xhr.setRequestHeader('Accept', 'application/json');
+            if (this.token) xhr.setRequestHeader('Authorization', `Bearer ${this.token}`);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable && typeof onProgress === 'function') {
+                    onProgress(Math.round((e.loaded / e.total) * 100));
+                }
+            };
+
+            xhr.onload = () => {
+                this.gallery.isUploading = false;
+
+                let data = null;
+                try { data = JSON.parse(xhr.responseText || 'null'); } catch (_) {}
+
+                if (xhr.status >= 400) {
+                    const errorMsg = data?.message || Object.values(data?.errors || {}).flat().join(' ') || 'Upload failed';
+                    this.addToast(errorMsg, 'error');
+                    return resolve({ status: xhr.status, data, media: null });
+                }
+
+                // Accept: [..] | { data: [..] } | { media: [..] }
+                const media = Array.isArray(data) ? data
+                    : Array.isArray(data?.data) ? data.data
+                    : Array.isArray(data?.media) ? data.media
+                    : null;
+
+                // Keep the store's album list in sync (item counts on the list page)
+                if (media && Array.isArray(this.gallery.items)) {
+                    this.gallery.items = this.gallery.items.map(g =>
+                        String(g.id) === String(galleryId)
+                            ? { ...g, media: [...(g.media || []), ...media] }
+                            : g
+                    );
+                }
+
+                resolve({ status: xhr.status, data, media });
+            };
+
+            xhr.onerror = () => {
+                this.gallery.isUploading = false;
+                this.addToast('Network error: upload failed', 'error');
+                resolve({ status: 500, data: null, media: null });
+            };
+
+            xhr.send(formData);
+        });
+    },
+    /**
      * Delete Media Item
      */
     async deleteMedia__(endpoint, galleryId, id) {
@@ -468,6 +532,28 @@ export default (Alpine) => ({
             console.error("Delete media catch triggered by:", error.name, error.message, error);
             this.addToast("Failed to delete item", "error");
         }
+    },
+    async deleteAlbum(endpoint, albumId) {
+        const response = await fetch(`${this.apiUrl}/${endpoint.replace(/^\//, '')}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': this.token ? `Bearer ${this.token}` : '' 
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error ${response.status}`);
+        } 
+
+        // Remove the album from the store's album list
+        if (Array.isArray(this.gallery?.items)) {
+            this.gallery.items = this.gallery.items.filter(album => album && String(album.id) !== String(albumId));
+        }
+
+        if (response.status === 204) return {};
+        return await response.json().catch(() => ({ success: true }));
     },
     async deleteMedia(endpoint, galleryId, mediaId) {
         const response = await fetch(`${this.apiUrl}/${endpoint.replace(/^\//, '')}`, {
@@ -520,19 +606,16 @@ export default (Alpine) => ({
         this.gallery.lightboxOpen = true;
         document.body.style.overflow = 'hidden';
     },
-
     closeLightbox() {
         this.gallery.lightboxOpen = false;
         this.gallery.activeMediaIndex = null;
         document.body.style.overflow = 'auto';
     },
-
     nextMedia() {
         if (this.gallery.activeMediaIndex === null) return;
         const total = this.filteredGallery.length;
         this.gallery.activeMediaIndex = (this.gallery.activeMediaIndex + 1) % total;
     },
-
     prevMedia() {
         if (this.gallery.activeMediaIndex === null) return;
         const total = this.filteredGallery.length;

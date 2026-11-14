@@ -13,11 +13,113 @@
             </div>
         </div>
 
-        <!-- Filter Buttons -->
-        <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-            <button @click="mediaTypeFilter = 'all'" :class="mediaTypeFilter === 'all' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">All</button>
-            <button @click="mediaTypeFilter = 'image'" :class="mediaTypeFilter === 'image' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">Photos</button>
-            <button @click="mediaTypeFilter = 'video'" :class="mediaTypeFilter === 'video' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">Videos</button>
+        <div class="flex items-center gap-3">
+            <!-- Filter Buttons -->
+            <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+                <button @click="mediaTypeFilter = 'all'" :class="mediaTypeFilter === 'all' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">All</button>
+                <button @click="mediaTypeFilter = 'image'" :class="mediaTypeFilter === 'image' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">Photos</button>
+                <button @click="mediaTypeFilter = 'video'" :class="mediaTypeFilter === 'video' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">Videos</button>
+            </div>
+
+            <!-- Add Media Button -->
+            <button type="button"
+                    @click="openAddMediaModal()"
+                    :disabled="!activeAlbum"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs sm:text-sm font-medium transition shadow-xs whitespace-nowrap">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Add media</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Media Modal -->
+    <div x-show="showAddMediaModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @keydown.escape.window="if (showAddMediaModal) closeAddMediaModal()">
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-xl w-full p-6 space-y-4"
+             @click.outside="closeAddMediaModal()">
+
+            <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">Add media</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Adding to <span class="font-medium text-gray-700 dark:text-gray-300" x-text="activeAlbum?.title"></span>
+                    </p>
+                </div>
+                <button type="button" @click="closeAddMediaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Drop Zone -->
+            <label @dragover.prevent="isDragging = true"
+                   @dragleave.prevent="isDragging = false"
+                   @drop.prevent="isDragging = false; addNewMediaFiles($event.dataTransfer.files)"
+                   :class="isDragging ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/40'"
+                   class="flex flex-col items-center justify-center gap-1 py-8 border-2 border-dashed rounded-xl cursor-pointer transition text-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Drop photos or videos here, or click to browse</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" x-text="'Up to ' + maxUploadSizeMB + ' MB per file'"></span>
+                <input type="file" multiple accept="image/*,video/*" class="hidden"
+                       :disabled="uploadingMedia"
+                       @change="addNewMediaFiles($event.target.files); $event.target.value = ''" />
+            </label>
+
+            <template x-if="addMediaError">
+                <p class="text-xs text-red-500" x-text="addMediaError"></p>
+            </template>
+
+            <!-- Selected File Previews -->
+            <template x-if="newMediaItems.length > 0">
+                <div class="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-64 overflow-y-auto pr-1">
+                    <template x-for="(item, index) in newMediaItems" :key="item.key">
+                        <div class="relative aspect-square rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden border border-gray-200 dark:border-gray-600">
+                            <template x-if="item.type === 'image'">
+                                <img :src="item.url" class="w-full h-full object-cover" />
+                            </template>
+                            <template x-if="item.type === 'video'">
+                                <video :src="item.url" class="w-full h-full object-cover" muted></video>
+                            </template>
+                            <button type="button" x-show="!uploadingMedia" @click="removeNewMedia(index)"
+                                    class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px]">✕</button>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Upload Progress -->
+            <template x-if="uploadingMedia">
+                <div class="space-y-1">
+                    <div class="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-indigo-600 transition-all" :style="'width:' + uploadProgress + '%'"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'Uploading… ' + uploadProgress + '%'"></p>
+                </div>
+            </template>
+
+            <div class="flex items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <span class="text-xs text-gray-500 dark:text-gray-400"
+                      x-text="newMediaItems.length + (newMediaItems.length === 1 ? ' file selected' : ' files selected')"></span>
+                <div class="flex gap-2">
+                    <button type="button" @click="closeAddMediaModal()" :disabled="uploadingMedia"
+                            class="px-4 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition disabled:opacity-50">Cancel</button>
+                    <button type="button" @click="uploadMediaToAlbum()" :disabled="uploadingMedia || newMediaItems.length === 0"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition">
+                        <span x-show="!uploadingMedia">Upload to album</span>
+                        <span x-show="uploadingMedia">Uploading…</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
